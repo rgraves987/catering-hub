@@ -1,0 +1,129 @@
+// Shared helpers: sign-in check, owner check, and paid-access rules.
+import { getStore } from "@netlify/blobs";
+
+export const json = (body, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json", "cache-control": "no-store" },
+  });
+
+// Returns the signed-in Netlify Identity user, or a Response to send back.
+export async function getUser(req) {
+  const authz = req.headers.get("authorization") || "";
+  if (!authz.startsWith("Bearer ")) return json({ error: "Sign in required" }, 401);
+  try {
+    const r = await fetch(`${new URL(req.url).origin}/.netlify/identity/user`, { headers: { authorization: authz } });
+    if (!r.ok) return json({ error: "Sign in required" }, 401);
+    const user = await r.json();
+    if (!user || !user.id || !user.email) return json({ error: "Sign in required" }, 401);
+    user.email = String(user.email).toLowerCase();
+    return user;
+  } catch {
+    return json({ error: "Could not check sign-in" }, 503);
+  }
+}
+
+// OWNER_EMAILS (Netlify environment variable): your email(s), comma-separated.
+// Owners always have access and see the Access tab. If it's empty, paid access is switched off.
+export const owners = () =>
+  (process.env.OWNER_EMAILS || "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+export const isOwner = (email) => owners().includes(String(email || "").toLowerCase());
+export const accessOn = () => owners().length > 0;
+
+// Dates are whole days in your time zone (ACCESS_TIMEZONE, default America/Chicago).
+const tz = () => process.env.ACCESS_TIMEZONE || "America/Chicago";
+export const todayStr = () => new Date().toLocaleDateString("en-CA", { timeZone: tz() });
+export const dateOfUnix = (sec) => new Date(sec * 1000).toLocaleDateString("en-CA", { timeZone: tz() });
+export const isDate = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d || "") && !isNaN(Date.parse(d + "T00:00:00Z"));
+export const addDays = (d, n) => {
+  const [y, m, dd] = d.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, dd + n)).toISOString().slice(0, 10);
+};
+export const daysBetween = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 864e5);
+
+export const accessStore = () => getStore({ name: "catering-hub-access", consistency: "strong" });
+export const userKey = (email) => "user:" + String(email).toLowerCase();
+export const seenKey = (email) => "seen:" + String(email).toLowerCase();
+export const trialKey = (email) => "trialused:" + String(email).toLowerCase();
+// Free trial for new users, in days (0 = no trial). Set on the Access tab; default 3.
+export const trialLength = (cfg) => { const n = Math.round(Number(cfg && cfg.trialDays)); return cfg && cfg.trialDays !== undefined && n >= 0 && n <= 90 ? n : 3; };
+
+// Is this person allowed in right now?
+export async function accessStatus(user) {
+  const owner = isOwner(user.email);
+  if (!accessOn() || owner) return { ok: true, owner };
+  const st = accessStore();
+  const [rec, cfg, seen] = await Promise.all([
+    st.get(userKey(user.email), { type: "json" }),
+    st.get("config", { type: "json" }),
+    st.get(seenKey(user.email), { type: "json" }),
+  ]);
+  // Remember when each account was last used (at most once an hour), so you can see it on the Access tab,
+  // and which email goes with this account ID, so online payments can be matched to it.
+  const now = new Date().toISOString();
+  if (!seen || Date.now() - Date.parse(seen.at || 0) > 36e5) {
+    await Promise.all([st.setJSON(seenKey(user.email), { at: now }), st.setJSON("uid:" + user.id, { email: user.email })]);
+  }
+  const pub = publicConfig(cfg);
+  let r = rec;
+  // First sign-in of a new invited user: start the free trial, once per email address.
+  // (Kept even if you later remove their access record, so the trial can't be restarted.)
+  if (!r) {
+    const trialDays = trialLength(cfg);
+    const used = await st.get(trialKey(user.email), { type: "json" });
+    if (trialDays > 0 && !used) {
+      const through = addDays(todayStr(), trialDays - 1);
+      r = { email: user.email, paidThrough: through, created: now, trial: true,
+            log: [{ at: now, action: "trial", days: trialDays, through }] };
+      await Promise.all([st.setJSON(userKey(user.email), r), st.setJSON(trialKey(user.email), { at: now, days: trialDays })]);
+      await notify(st, { type: "trial", email: user.email, through,
+        msg: `Started a ${trialDays}-day free trial (first sign-in).` });
+    }
+  }
+  const trial = !!(r && r.trial);
+  if (!r || !r.paidThrough) return { ok: false, reason: "inactive", ...pub };
+  const left = daysBetween(todayStr(), r.paidThrough);
+  if (left < 0) return { ok: false, reason: trial ? "trialEnded" : "expired", paidThrough: r.paidThrough, ...pub };
+  return { ok: true, owner: false, trial, paidThrough: r.paidThrough, daysLeft: left, ...pub };
+}
+
+// Subscription price until you set your own on the Access tab ($10 per 30-day period).
+export const DEFAULT_PRICE = 10;
+
+// What customers are allowed to see from your settings.
+export const publicConfig = (cfg) => ({
+  contact: (cfg && cfg.contact) || "",
+  payLink: (cfg && cfg.payLink) || "",
+  portalLink: (cfg && cfg.portalLink) || "",
+  price: cfg && cfg.price !== undefined ? cfg.price : DEFAULT_PRICE,
+});
+
+// Add paid days to an account (used for manual payments and Stripe payments).
+// Paid while still active: added to the current end date. Lapsed or new: starts today.
+// until: for subscriptions, the paid billing period's end date. Access runs to whichever is later.
+export async function extendAccess(st, email, { days, amount = 0, currency = "USD", method = "", note = "", ref = "", until = "" }) {
+  email = String(email).toLowerCase();
+  const now = new Date().toISOString(), today = todayStr();
+  const rec = (await st.get(userKey(email), { type: "json" })) || { email, paidThrough: null, created: now, log: [] };
+  rec.log = rec.log || [];
+  rec.trial = false;
+  const active = rec.paidThrough && rec.paidThrough >= today;
+  if (until) {
+    const before = rec.paidThrough;
+    rec.paidThrough = active && before > until ? before : until;
+    days = daysBetween(active ? before : addDays(today, -1), rec.paidThrough);
+  } else {
+    rec.paidThrough = active ? addDays(rec.paidThrough, days) : addDays(today, days - 1);
+  }
+  rec.log.push({ at: now, action: "payment", days, through: rec.paidThrough,
+    amount: Math.round(Number(amount || 0) * 100) / 100, currency, method, note, ref });
+  rec.log = rec.log.slice(-120);
+  await st.setJSON(userKey(email), rec);
+  return rec;
+}
+
+// A notification for your Access tab (payments in, failed payments, cancellations).
+export async function notify(st, n) {
+  const at = new Date().toISOString();
+  await st.setJSON(`note:${at}-${Math.random().toString(36).slice(2, 8)}`, { at, ...n });
+}
