@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catering Hub: Menus, Pricing, Estimates and Receipts</title>
+<meta name="theme-color" content="#1a1412">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Ember theme: charcoal, fire-orange and gold. (--green is the main accent; the name is kept for the code.) */
+  --bg:#1a1412; --surface:rgba(36,27,23,.88); --ink:#f4ebe2; --muted:#bfab9c; --line:#4b3a30;
+  --green:#f28a3c; --on-green:#1a1412; --mustard:#f2b84b; --soft:rgba(64,45,35,.7); --red:#ff8a78;
+  --field:#14100e; --glow:rgba(242,138,60,.35);
+  color-scheme: dark;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+/* ----- background: ember glow, grill grate, smoke grain, rising sparks ----- */
+.fx{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.fx .glow{position:absolute;inset:0;background:
+  radial-gradient(ellipse 90% 55% at 50% 112%, rgba(255,106,28,.42), rgba(255,106,28,.12) 45%, transparent 70%),
+  radial-gradient(ellipse 60% 45% at 8% -5%, rgba(242,184,75,.16), transparent 70%),
+  radial-gradient(ellipse 55% 40% at 100% 20%, rgba(176,58,46,.18), transparent 70%),
+  linear-gradient(180deg,#1f1714 0%,#1a1412 45%,#140f0d 100%)}
+.fx .grate{position:absolute;inset:0;opacity:.09;
+  background:repeating-linear-gradient(90deg, transparent 0 46px, #f2b84b 46px 48px, transparent 48px 96px),
+             repeating-linear-gradient(0deg, transparent 0 140px, #f2b84b 140px 142px);
+  -webkit-mask-image:linear-gradient(180deg,transparent 35%,#000 100%);mask-image:linear-gradient(180deg,transparent 35%,#000 100%)}
+.fx .grain{position:absolute;inset:-50%;opacity:.13;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.fx .smoke{position:absolute;left:-20%;right:-20%;bottom:-10%;height:70%;opacity:.5;filter:blur(40px);
+  background:radial-gradient(ellipse 30% 40% at 25% 70%,rgba(190,170,155,.10),transparent 70%),
+             radial-gradient(ellipse 35% 45% at 70% 60%,rgba(190,170,155,.08),transparent 70%);
+  animation:drift 38s ease-in-out infinite alternate}
+.fx i{position:absolute;bottom:-12px;width:4px;height:4px;border-radius:50%;background:#ffb25c;
+  box-shadow:0 0 6px 2px rgba(255,140,50,.8),0 0 14px 4px rgba(255,90,20,.35);opacity:0;animation:rise linear infinite}
+@keyframes rise{0%{transform:translate(0,0) scale(1);opacity:0}10%{opacity:.95}70%{opacity:.6}100%{transform:translate(var(--dx,30px),-92vh) scale(.3);opacity:0}}
+@keyframes drift{from{transform:translateX(-4%)}to{transform:translateX(4%)}}
+@media (prefers-reduced-motion:reduce){.fx i,.fx .smoke{animation:none}.fx i{display:none}}
+main,#gate{position:relative;z-index:1}
+/* ----- brand ----- */
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{flex:none;width:44px;height:44px;filter:drop-shadow(0 0 10px var(--glow))}
+.eyebrow{font-family:Oswald,"Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;color:var(--mustard);margin:0 0 2px}
+h1{background:linear-gradient(180deg,#fff3e6 10%,#f6c27a 60%,#f28a3c);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.01em}
+h1.logo{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--ink);margin:0;line-height:0}
+h1.logo img{display:block;height:auto;max-width:100%;filter:drop-shadow(0 0 16px rgba(242,120,40,.3))}
+h1.logo.gl img{margin:6px auto 0;width:216px}
+.top .brand{gap:14px}
+.top h1.logo img{width:112px}
+@media (max-width:600px){.top h1.logo img{width:88px}}
+.byline{font-size:.68rem;color:var(--muted);opacity:.85;letter-spacing:.04em}
+.tagline{font-family:Oswald,"Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:.2em;font-size:.7rem;color:var(--muted);margin:4px 0 0}
+main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+h1,h2,h3{font-family:Bitter,Georgia,serif;margin:0}
+h1{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.15}
+h2{font-size:1.2rem;margin-bottom:12px}
+h3.sm{font-size:1rem;margin:16px 0 8px;color:var(--green)}
+.lede{color:var(--muted);margin:8px 0 24px;max-width:62ch}
+section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,220,180,.05);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+h2{font-family:Oswald,"Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--mustard)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-height:40px}
+textarea{min-height:70px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,button:focus-visible{outline:2px solid var(--mustard);outline-offset:2px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:640px}
+table.slim{min-width:0}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);font-size:.93rem;vertical-align:middle}
+th{font-weight:600;color:var(--muted);font-size:.82rem}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.off td{opacity:.45}
+tr.grp td{background:var(--soft);font-weight:600;font-size:.85rem;color:var(--green)}
+tr.tot td{font-weight:700;border-top:2px solid var(--green)}
+td input[type=number]{width:90px;min-height:34px;padding:4px 8px;text-align:right}
+td input[type=text]{min-height:34px;padding:4px 8px}
+td input[type=checkbox]{width:20px;height:20px;min-height:0}
+.sub{display:block;color:var(--muted);font-size:.78rem}
+.sub.chg{color:var(--mustard);font-weight:600}
+.totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px}
+.stat{background:var(--soft);border:1px solid rgba(242,184,75,.12);border-radius:10px;padding:12px 14px}
+.stat b{display:block;font-family:Bitter,Georgia,serif;font-size:1.5rem;color:var(--mustard)}
+.stat b.neg{color:var(--red)}
+.stat span{font-size:.82rem;color:var(--muted)}
+.stat.hl{border-left:5px solid var(--green);box-shadow:0 0 22px rgba(242,138,60,.15)}
+details{margin-top:6px}
+summary{cursor:pointer;font-weight:600}
+pre{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+.note{color:var(--muted);font-size:.85rem;margin:10px 0 0}
+button,.btn{font:inherit;font-weight:600;background:linear-gradient(180deg,#f6a052,#e0702a);box-shadow:0 2px 12px rgba(242,120,40,.3);color:var(--on-green);border:0;border-radius:6px;padding:9px 16px;min-height:40px;cursor:pointer;display:inline-flex;align-items:center;margin:0}
+button.sec,.btn.sec{background:transparent;box-shadow:none;color:var(--green);border:1px solid var(--line)}
+button.sm{min-height:32px;padding:4px 10px;font-size:.85rem}
+button.x{box-shadow:none;background:transparent;color:var(--red);border:1px solid var(--line);min-height:30px;padding:2px 10px;font-size:.85rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.bar>div{flex:1 1 240px}
+.warns p{border-left:5px solid var(--red);background:var(--soft);padding:8px 12px;border-radius:6px;margin:8px 0 0;font-size:.9rem}
+.warns p.good{border-left-color:var(--green)}
+.warns p.info{border-left-color:var(--mustard)}
+.doc{background:#fff;color:#1b2824;border:1px solid #d6ddd9;border-radius:8px;padding:22px;max-width:720px}
+.doc h3{font-family:Bitter,Georgia,serif;margin:0 0 2px;font-size:1.4rem;color:#a8461a}
+.doc table{min-width:0;margin:12px 0}
+.doc th,.doc td{color:#1b2824;border-color:#d6ddd9}
+.doc th{color:#4a5a55}
+.doc tr.tot td{border-top:2px solid #a8461a}
+.doc .meta{color:#4a5a55;font-size:.9rem;margin:0 0 3px}
+.doc .fine{color:#4a5a55;font-size:.82rem;margin-top:12px;white-space:pre-wrap}
+.badge{display:inline-block;padding:2px 12px;border-radius:99px;font-weight:700;font-size:.85rem;margin-top:6px}
+.badge.paid{background:#dff3e4;color:#1f6b3a}
+.badge.due{background:#fdf0d5;color:#7a4f00}
+.badge.over{background:#fde2df;color:#8f2a1f}
+.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;justify-content:space-between;margin-bottom:10px}
+.jobbar{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.jobbar>div{min-width:220px}
+details.more{position:relative;margin:0}
+details.more>summary{list-style:none;font-weight:600;color:var(--green);border:1px solid var(--line);border-radius:6px;padding:8px 14px;min-height:40px;display:flex;align-items:center}
+details.more>summary::-webkit-details-marker{display:none}
+details.more[open]>div{position:absolute;right:0;top:46px;z-index:20;background:#241b17;border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px;min-width:210px;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+.stick{position:sticky;top:0;z-index:10;background:rgba(26,20,18,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:6px 16px 0;margin:0 -16px}
+.strip{background:linear-gradient(90deg,#e0702a,#f2a24a 60%,#f2b84b);box-shadow:0 4px 18px rgba(242,120,40,.3);color:var(--on-green);border-radius:10px;padding:9px 14px;display:flex;flex-wrap:wrap;gap:4px 20px;font-size:.9rem}
+.strip b{font-family:Bitter,Georgia,serif;font-size:1.05rem}
+.tabs{display:flex;gap:2px;overflow-x:auto;margin:8px 0 16px;border-bottom:2px solid var(--line);scrollbar-width:none}
+.tabs button{background:transparent;box-shadow:none;font-family:Oswald,"Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:.08em;font-weight:500;color:var(--muted);border:0;border-bottom:3px solid transparent;border-radius:0;padding:10px 12px;white-space:nowrap;margin-bottom:-2px;min-height:44px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--mustard)}
+.tabs i{font-style:normal;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--soft);color:var(--green);font-size:.78rem;margin-right:7px}
+.tabs button[aria-selected="true"] i{background:var(--mustard);color:#1a1412}
+.tabs .end{margin-left:auto}
+.next{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+table.sum td.num{white-space:nowrap}
+table.sum tr.sg td{font-weight:600;color:var(--green);background:var(--soft);font-size:.85rem}
+table.sum td.ind{padding-left:22px}
+.profit td{font-weight:700;font-size:1.02rem}
+body:not(.in) main{display:none}
+body.in #gate{display:none}
+#gate{min-height:100vh;display:grid;place-items:center;padding:20px 16px}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px;width:100%;max-width:410px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 60px rgba(242,120,40,.12);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.gcard form{display:grid;gap:12px;margin-top:14px}
+[hidden]{display:none!important}
+.gcard .lnk{box-shadow:none;background:none;border:0;color:var(--green);padding:0;min-height:0;font-weight:600;text-decoration:underline;cursor:pointer;justify-self:start}
+#gErr{color:var(--red);font-weight:600}
+.warnmsg{color:var(--red)!important;font-weight:600}
+#acct{font-size:.8rem;color:var(--muted);margin:0;overflow-wrap:anywhere}
+#accBanner{display:none;margin:0 0 8px;padding:8px 12px;border-radius:8px;border-left:5px solid var(--mustard);background:var(--soft);font-size:.88rem}
+#accBanner.show{display:block}
+#gContact{white-space:pre-wrap;background:var(--soft);border-radius:8px;padding:10px 12px;margin:12px 0 0;font-size:.92rem}
+#gContact:empty{display:none}
+.lockicon{font-size:2rem;line-height:1;margin:12px 0 0}
+table.ac td{vertical-align:top}
+table.ac td:first-child{min-width:200px}
+table.ac td input[type=date]{min-height:32px;padding:3px 6px;width:150px;display:inline-block}
+table.ac .badge{margin-top:0;white-space:nowrap}
+table.ac .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.cnt{display:inline-block;background:#e0561f;color:#fff;border-radius:99px;padding:0 7px;font-size:.7rem;font-family:system-ui,sans-serif;letter-spacing:0;margin-left:6px;line-height:1.5}
+.chk{display:flex;gap:10px;align-items:flex-start;color:var(--ink);font-size:.9rem;margin:0}
+.chk input{width:20px;height:20px;min-height:0;flex:none;margin-top:2px}
+table.tx{min-width:0}
+table.tx td.ln{color:var(--muted);font-size:.8rem;max-width:230px}
+table.tx tr.sg td{font-weight:600;color:var(--mustard);background:var(--soft);font-size:.85rem;text-transform:uppercase;letter-spacing:.06em}
+table.tx tr.tot td{font-weight:700}
+tr.new td{background:rgba(242,138,60,.12)}
+.nt{white-space:nowrap;font-size:.75rem;font-weight:700;padding:1px 8px;border-radius:99px;display:inline-block}
+.nt.payment{background:#dff3e4;color:#1f6b3a}.nt.failed,.nt.refund{background:#fde2df;color:#8f2a1f}.nt.canceled,.nt.unmatched{background:#fdf0d5;color:#7a4f00}.nt.trial{background:#e3ecfb;color:#24467a}
+.badge.trial{background:#e3ecfb;color:#24467a}
+#accBanner button{margin-left:8px}
+button:disabled{opacity:.35;cursor:default}
+table.ie{min-width:760px}
+table.ie td input[type=text]{min-width:120px}
+table.ie td:first-child input[type=text]{min-width:180px}
+table.ie td input[type=number]{width:84px}
+table.ie td.act{white-space:nowrap;text-align:right}
+table.ie td.act button{margin-left:4px}
+.addbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.addbar>div{flex:1 1 170px}
+.grid .hint{display:block;color:var(--muted);font-size:.78rem;margin-top:3px}
+details.qref{background:var(--soft);border-left:5px solid var(--mustard);border-radius:8px;padding:8px 12px;margin:0 0 18px;font-size:.8rem;line-height:1.45;color:var(--ink)}
+details.qref>summary{font-size:.85rem;color:var(--green);padding:2px 0}
+details.qref h4{font-size:.8rem;margin:10px 0 2px;color:var(--green)}
+details.qref ul{margin:0;padding-left:18px}
+details.qref li{margin:1px 0;overflow-wrap:anywhere}
+.qcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:0 20px}
+@media (max-width:600px){ .top .lede{display:none} #saveMsg{font-size:.78rem} .jobbar>div{min-width:0;flex:1 1 100%} }
+@media print{
+  body{background:#fff!important}
+  .stick,.top,.lede,noscript,.fx,#gate{display:none!important}
+  body.pr-est main>*:not(#tab-summary), body.pr-rc main>*:not(#tab-summary){display:none!important}
+  body.pr-est #tab-summary>*:not(#estSec), body.pr-rc #tab-summary>*:not(#rcSec){display:none!important}
+  .noprint, section>h2{display:none!important}
+  section{border:0!important;padding:0!important;margin:0!important;background:#fff!important}
+  .doc{border:0;padding:0;max-width:none}
+}
+</style>
+</head>
+<body>
+<div class="fx" aria-hidden="true"><div class="glow"></div><div class="smoke"></div><div class="grate"></div><div class="grain"></div><i style="left:6%;animation-duration:11s;animation-delay:0s;--dx:40px;width:3px;height:3px;"></i><i style="left:14%;animation-duration:14s;animation-delay:3s;--dx:-30px;"></i><i style="left:22%;animation-duration:9s;animation-delay:6s;--dx:25px;"></i><i style="left:31%;animation-duration:13s;animation-delay:1.5s;--dx:-45px;width:3px;height:3px;"></i><i style="left:39%;animation-duration:10s;animation-delay:8s;--dx:35px;"></i><i style="left:47%;animation-duration:15s;animation-delay:4s;--dx:-20px;"></i><i style="left:55%;animation-duration:12s;animation-delay:0.8s;--dx:30px;width:3px;height:3px;"></i><i style="left:63%;animation-duration:9.5s;animation-delay:5.5s;--dx:-35px;"></i><i style="left:71%;animation-duration:14s;animation-delay:2.2s;--dx:45px;"></i><i style="left:79%;animation-duration:11s;animation-delay:7s;--dx:-25px;width:3px;height:3px;"></i><i style="left:86%;animation-duration:13s;animation-delay:3.6s;--dx:20px;"></i><i style="left:93%;animation-duration:10s;animation-delay:9s;--dx:-40px;"></i><i style="left:18%;animation-duration:16s;animation-delay:10s;--dx:50px;width:3px;height:3px;"></i><i style="left:58%;animation-duration:16s;animation-delay:11s;--dx:-50px;"></i></div>
+<div id="gate">
+  <div class="gcard">
+    <p class="eyebrow" style="text-align:center;margin:0">Welcome to</p>
+    <h1 class="logo gl"><img src="/logo.webp" alt="Catering Hub" width="216" height="220"></h1>
+    <p class="tagline" style="text-align:center;margin:2px 0 0">Menus • Pricing • Receipts</p>
+    <p class="byline" style="text-align:center;margin:3px 0 8px">By GNB Enterprise LLC</p>
+    <p class="note" id="gMsg" style="font-size:.95rem">Loading…</p>
+    <div id="gLoad"><button type="button" id="gRetry" data-gate="retry" hidden>Try again</button></div>
+    <div id="gLocked" hidden>
+      <div class="lockicon" aria-hidden="true">🔒</div>
+      <p id="gContact"></p>
+      <div class="row" style="margin:14px 0 0"><button type="button" id="gPay" data-gate="pay" hidden>Pay now</button><button type="button" class="sec" data-gate="recheck">I've renewed: check again</button><button type="button" class="sec" data-gate="signout">Sign out</button></div>
+    </div>
+    <form id="fLogin" hidden>
+      <div><label for="gEmail">Email</label><input id="gEmail" class="nosave" type="email" autocomplete="username" required></div>
+      <div><label for="gPw">Password</label><input id="gPw" class="nosave" type="password" autocomplete="current-password" required></div>
+      <button type="submit">Sign in</button>
+      <button type="button" class="lnk" data-gate="forgot">Forgot your password?</button>
+    </form>
+    <form id="fForgot" hidden>
+      <div><label for="gEmail2">Email</label><input id="gEmail2" class="nosave" type="email" autocomplete="username" required></div>
+      <button type="submit">Send reset link</button>
+      <button type="button" class="lnk" data-gate="login">Back to sign in</button>
+    </form>
+    <form id="fSetPw" hidden>
+      <p id="setPwTitle" style="margin:0;font-weight:600">Choose a password.</p>
+      <div><label for="gNew">New password (8+ characters)</label><input id="gNew" class="nosave" type="password" autocomplete="new-password" required></div>
+      <div><label for="gNew2">Type it again</label><input id="gNew2" class="nosave" type="password" autocomplete="new-password" required></div>
+      <button type="submit">Save password and sign in</button>
+    </form>
+    <noscript><p class="note">This calculator needs JavaScript. Open it in Chrome, Safari or Edge.</p></noscript>
+    <p class="note" id="gErr" role="alert"></p>
+    <p class="note" style="font-size:.78rem">Access is by invitation only. Your account is for you alone. Don't share your password.</p>
+  </div>
+</div>
+<main>
+<noscript><section style="border-left:5px solid #d9a21b"><h2>This view can't run the calculator</h2><p>The menu, prices and totals need a web browser. On a phone, file previews (like the Files app) don't run it. Open the web link in Chrome, Safari or Edge with JavaScript turned on.</p></section></noscript>
+<div class="top">
+  <div><div class="brand"><h1 class="logo"><img src="/logo.webp" alt="Catering Hub" width="86" height="88"></h1><div><p class="tagline" style="margin:0">Menus • Pricing • Receipts</p><p class="byline" style="margin:3px 0 0">By GNB Enterprise LLC</p></div></div><p class="lede" style="margin:8px 0 0">Go through the tabs in order. <b>Summary</b> shows the full bill and everything the job costs you.</p></div>
+  <div class="jobbar noprint">
+    <div><label for="jobSel">Job</label><select id="jobSel" class="nosave"></select></div>
+    <button id="bNew" type="button">New job</button>
+    <details class="more"><summary>More ▾</summary><div>
+      <button id="bDup" type="button" class="sec">Copy as new job</button>
+      <button id="bDel" type="button" class="sec">Delete job</button>
+      <button id="bExp" type="button" class="sec">Download backup</button>
+      <label class="btn sec" for="imp" style="margin:0">Restore backup</label><input id="imp" class="nosave" type="file" accept=".json,application/json" hidden>
+      <button id="bPortal" type="button" class="sec" hidden>Manage my subscription</button>
+      <p id="acct"></p>
+      <button id="bOut" type="button" class="sec">Sign out</button>
+    </div></details>
+  </div>
+</div>
+<p class="note noprint" id="saveMsg" style="margin:0 0 6px"></p>
+<p class="noprint" id="accBanner" role="status"></p>
+
+<div class="stick noprint">
+  <div class="strip" aria-live="polite"><span>Customer total <b id="stTotal">$0</b></span><span>Your cost <b id="stCost">$0</b></span><span>Your profit <b id="stProf">$0</b></span><span id="stBalW">Still owed <b id="stBal">$0</b></span></div>
+  <nav class="tabs" role="tablist" aria-label="Calculator steps">
+    <button type="button" role="tab" data-tab="event"><i>1</i>Event</button>
+    <button type="button" role="tab" data-tab="menu"><i>2</i>Menu</button>
+    <button type="button" role="tab" data-tab="pricing"><i>3</i>Pricing</button>
+    <button type="button" role="tab" data-tab="payments"><i>4</i>Payments</button>
+    <button type="button" role="tab" data-tab="summary"><i>5</i>Summary</button>
+    <button type="button" role="tab" data-tab="prices" class="end"><i>$</i>My prices</button>
+    <button type="button" role="tab" data-tab="taxes"><i>≡</i>Taxes</button>
+    <button type="button" role="tab" data-tab="setup"><i>⚙</i>Setup</button>
+    <button type="button" role="tab" data-tab="access" hidden><i>★</i>Access<b class="cnt" id="acBadge" hidden></b></button>
+  </nav>
+</div>
+
+<div id="tab-event" class="panel" role="tabpanel">
+<section>
+  <h2>Customer and event</h2>
+    <div class="grid">
+      <div><label for="biz">Your business name</label><input id="biz" type="text" placeholder="Your BBQ Co."></div>
+      <div><label for="bizc">Your phone or email</label><input id="bizc" type="text"></div>
+      <div><label for="cname">Customer name</label><input id="cname" type="text"></div>
+      <div><label for="ccontact">Customer phone or email</label><input id="ccontact" type="text"></div>
+      <div><label for="edate">Event date</label><input id="edate" type="date"></div>
+      <div><label for="etime">Serving time</label><input id="etime" type="time"></div>
+      <div><label for="venue">Event location</label><input id="venue" type="text"></div>
+      <div><label for="valid">Estimate valid for (days)</label><input id="valid" type="number" min="1" value="14"></div>
+      <div><label for="cdl">Final guest count due (days before event)</label><input id="cdl" type="number" min="0" value="7"></div>
+    </div>
+    <div style="margin-top:14px"><label for="qnotes">Notes for the customer (optional)</label><textarea id="qnotes" placeholder="Serving style, dietary needs, what's included, rain plan, cancellation policy"></textarea></div>
+</section>
+<section>
+  <h2>Guests</h2>
+    <div class="grid">
+    <div><label for="adults">Adults and teens</label><input id="adults" type="number" min="0" value="0"></div>
+    <div><label for="kids" id="kidsLbl">Kids under 12 (eat about half)</label><input id="kids" type="number" min="0" value="0"></div>
+    <div><label for="appetite">Appetite</label>
+      <select id="appetite" data-opts="appetite"><option value="0.8">Light (lunch, other food around)</option><option value="1" selected>Normal</option><option value="1.25">Hungry (dinner, big eaters)</option></select></div>
+    <div><label for="style">Meat served as</label>
+      <select id="style" data-opts="style"><option value="4.5">Sandwich (4.5 oz)</option><option value="6" selected>Plate (6 oz)</option><option value="8">Big plate (8 oz)</option></select></div>
+    <div><label for="buffer">Extra for seconds and leftovers (%)</label><input id="buffer" type="number" min="0" max="50" value="10"></div>
+  </div>
+</section>
+<div class="next noprint"><span></span><button type="button" data-go="menu">Next: Menu →</button></div>
+</div>
+
+<div id="tab-menu" class="panel" role="tabpanel" hidden>
+<section>
+  <h2>Menu and shopping list</h2>
+  <p class="note" style="margin:0 0 12px">Every line is priced: meats per raw pound, sides per cooked pound, buns per pack, sauce per bottle. Prices come from your store price list (My prices tab). If you change a price here, only this job changes. <span id="staleNote"></span></p>
+  <div class="row noprint" style="margin-top:0"><button id="bUseStore" type="button" class="sec sm">Use my latest store prices for this job</button><button type="button" class="sec sm" data-go="setup">Add or change menu items</button></div>
+  <div class="grid noprint" style="margin-bottom:14px">
+    <div><label for="panType">Pans for sides</label><select id="panType" data-opts="pan">
+      <option value="120|0.77|half pan">Foil half pan, deep (2½", holds 120 oz)</option>
+      <option value="195|2.50|extra-deep half pan">Foil half pan, extra deep (4", holds 195 oz)</option>
+      <option value="346|2.76|full pan">Foil full pan, deep (3⅜", holds 346 oz)</option>
+      <option value="138|0|steel half pan">Steel half pan, 2½" (holds 4.3 qt), reusable</option>
+      <option value="custom">Custom size</option></select></div>
+    <div id="panCapW"><label for="panCap">Pan capacity filled to the brim (fl oz)</label><input id="panCap" type="number" min="1" value="120"></div>
+    <div><label for="panFill">Fill pans to (%)</label><input id="panFill" type="number" min="30" max="100" value="85"></div>
+    <div><label for="panPrice">Cost per disposable pan ($; add lid if you use one)</label><input id="panPrice" type="number" min="0" step="0.01" value="0.77"></div>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th></th><th>Item</th><th class="num">Cooked needed</th><th class="num">Buy</th><th class="num">Price</th><th class="num">Cost</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="totals">
+    <div class="stat"><b id="tCost">$0</b><span>Total food cost</span></div>
+    <div class="stat"><b id="tPP">$0</b><span id="tPPL">Food cost per guest (kids count as half)</span></div>
+    <div class="stat"><b id="tFCP">0%</b><span>Food cost as % of what you charge for food (most caterers aim for <span id="fcAim">28–35%</span>)</span></div>
+    <div class="stat hl"><b id="tSell">$0</b><span>Price per adult at <input id="fc" type="number" min="10" max="90" value="30" style="width:60px;min-height:28px;padding:2px 6px;display:inline-block"> % food cost</span></div>
+  </div>
+  <p class="note" id="people"></p>
+</section>
+<div class="next noprint"><button type="button" class="sec" data-go="event">← Event</button><button type="button" data-go="pricing">Next: Pricing →</button></div>
+</div>
+
+<div id="tab-pricing" class="panel" role="tabpanel" hidden>
+<section>
+  <h2>Pricing and job costs</h2>
+  <h3 class="sm">What the customer pays</h3>
+  <div class="grid">
+    <div><label for="price">Price per adult ($)</label><input id="price" type="number" min="0" step="0.5" value="18"></div>
+    <div><label for="kp">Kids price (% of adult price)</label><input id="kp" type="number" min="0" max="100" value="50"></div>
+    <div><label for="dlv">Delivery and setup fee ($)</label><input id="dlv" type="number" min="0" step="5" value="0"></div>
+    <div><label for="svc">Service charge (% of food, optional)</label><input id="svc" type="number" min="0" max="30" step="0.5" value="0"></div>
+    <div><label for="tax">Sales tax (%)</label><input id="tax" type="number" min="0" max="20" step="0.01" value="0"></div>
+    <div><label for="dep">Deposit to book (%)</label><input id="dep" type="number" min="0" max="100" value="50"></div>
+  </div>
+  <h3 class="sm">What the job costs you</h3>
+  <div class="grid">
+    <div><label for="hrs">Total labor hours (prep, cook, serve, clean)</label><input id="hrs" type="number" min="0" step="0.5" value="0"></div>
+    <div><label for="rate">Labor rate ($/hr, include payroll tax)</label><input id="rate" type="number" min="0" step="0.5" value="20"></div>
+    <div><label for="fuel">Wood, charcoal, propane ($)</label><input id="fuel" type="number" min="0" value="0"></div>
+    <div><label for="trav">Your delivery and travel cost ($)</label><input id="trav" type="number" min="0" value="0"></div>
+    <div><label for="pack">Plates, utensils, napkins ($ per guest)</label><input id="pack" type="number" min="0" step="0.05" value="0.75"></div>
+    <div><label for="other">Other costs: rentals, ice, chafing fuel, permits ($)</label><input id="other" type="number" min="0" step="5" value="0"></div>
+    <div><label for="fee">Card fees (% of amount collected; 0 if cash)</label><input id="fee" type="number" min="0" max="10" step="0.1" value="3"></div>
+    <div><label for="tm">Target profit margin (%)</label><input id="tm" type="number" min="0" max="80" value="25"></div>
+  </div>
+  <div class="totals">
+    <div class="stat"><b id="bRev">$0</b><span>Your revenue (before sales tax)</span></div>
+    <div class="stat"><b id="bCost">$0</b><span>Total costs</span></div>
+    <div class="stat"><b id="bProf">$0</b><span>Profit</span></div>
+    <div class="stat hl"><b id="bMar">0%</b><span>Profit margin</span></div>
+    <div class="stat"><b id="bBE">$0</b><span>Break-even price per adult</span></div>
+    <div class="stat"><b id="bTar">$0</b><span id="bTarL">Price per adult for your target margin</span></div>
+  </div>
+  <div class="row noprint"><button id="bApply" type="button" class="sm">Use the target-margin price</button></div>
+  <h3 class="sm">Biggest profit levers for this job</h3>
+  <table class="slim"><tbody id="levers"></tbody></table>
+  <p class="note">Each line shows the extra profit if you change only that one thing. Ranked by impact.</p>
+</section>
+<div class="next noprint"><button type="button" class="sec" data-go="menu">← Menu</button><button type="button" data-go="payments">Next: Payments →</button></div>
+</div>
+
+<div id="tab-payments" class="panel" role="tabpanel" hidden>
+<section>
+  <h2>Payments received</h2>
+  <p class="note" style="margin:0 0 12px">Record each deposit or payment when it comes in. The receipt on the Summary tab updates by itself.</p>
+    <div class="grid">
+      <div><label for="pd">Payment date</label><input id="pd" class="nosave" type="date"></div>
+      <div><label for="pamt">Amount ($)</label><input id="pamt" class="nosave" type="number" min="0" step="0.01"></div>
+      <div><label for="pmeth">Method</label><select id="pmeth" class="nosave" data-opts="method"><option>Cash</option><option>Card</option><option>Check</option><option>Zelle</option><option>Cash App</option><option>Venmo</option><option>PayPal</option><option>Other</option></select></div>
+      <div><label for="pnote">Note (check #, last 4, etc.)</label><input id="pnote" class="nosave" type="text"></div>
+    </div>
+    <div class="row">
+      <button id="bFillDep" type="button" class="sec sm">Fill deposit amount</button>
+      <button id="bFillBal" type="button" class="sec sm">Fill remaining balance</button>
+      <button id="bAddPay" type="button">Record payment</button>
+      <span id="msgP" class="note" style="margin:0"></span>
+    </div>
+    <div class="tablewrap"><table class="slim"><thead><tr><th>Date</th><th>Method</th><th>Note</th><th class="num">Amount</th><th></th></tr></thead><tbody id="payTbl"></tbody></table></div>
+</section>
+<div class="next noprint"><button type="button" class="sec" data-go="pricing">← Pricing</button><button type="button" data-go="summary">Next: Summary →</button></div>
+</div>
+
+<div id="tab-summary" class="panel" role="tabpanel" hidden>
+<section class="noprint">
+  <h2>Check before you send</h2>
+  <div class="totals" style="margin-top:0">
+    <div class="stat hl"><b id="gTotal">$0</b><span>Customer pays in total</span></div>
+    <div class="stat"><b id="gDep">$0</b><span id="gDepL">Deposit to book</span></div>
+    <div class="stat"><b id="gProf">$0</b><span id="gProfL">Your profit</span></div>
+    <div class="stat"><b id="gHour">$0</b><span>Your pay per hour worked (profit + wages, if you work the job)</span></div>
+    <div class="stat"><b id="gBuy">$0</b><span>Food and side pans to buy</span></div>
+    <div class="stat"><b id="gTar">$0</b><span id="gTarL">Price per adult to hit your target margin</span></div>
+  </div>
+  <div class="warns" id="warns"></div>
+</section>
+<section class="noprint">
+  <h2>Customer charges</h2>
+  <table class="slim sum"><tbody id="sumCharges"></tbody></table>
+</section>
+<section class="noprint">
+  <h2>Your full cost and profit</h2>
+  <p class="note" style="margin:0 0 8px">Only you see this. It never appears on the estimate or receipt.</p>
+  <table class="slim sum"><tbody id="sumCosts"></tbody></table>
+</section>
+<section id="estSec">
+  <h2>Customer estimate</h2>
+  <div class="row noprint" style="margin-top:0">
+    <button id="bCopyE" type="button">Copy estimate text</button>
+    <button id="bPrintE" type="button" class="sec">Print or save as PDF</button>
+    <span id="msgE" class="note" style="margin:0"></span>
+  </div>
+  <div id="estDoc" class="doc"></div>
+</section>
+<section id="rcSec">
+  <h2>Customer receipt</h2>
+  <div class="row noprint" style="margin-top:0">
+    <button id="bCopyR" type="button">Copy receipt text</button>
+    <button id="bPrintR" type="button" class="sec">Print or save receipt as PDF</button>
+    <span id="msgR" class="note" style="margin:0"></span>
+  </div>
+  <div id="rcDoc" class="doc"></div>
+</section>
+<div class="next noprint"><button type="button" class="sec" data-go="payments">← Payments</button></div>
+</div>
+
+<div id="tab-prices" class="panel" role="tabpanel" hidden>
+<section>
+  <h2>Price per pound</h2>
+  <p class="note" style="margin:0 0 12px">Enter what you paid and the weight from the package or store receipt. You can save the result to your store price list.</p>
+  <div class="grid">
+    <div><label for="paid">Total paid ($)</label><input id="paid" type="number" min="0" step="0.01" value="23.92"></div>
+    <div><label for="wt">Weight bought (lb)</label><input id="wt" type="number" min="0" step="0.01" value="8"></div>
+    <div><label for="yield">Yield after trim and cook (%)</label><input id="yield" type="number" min="1" max="100" value="55"></div>
+    <div><label for="oz">Serving size (oz cooked)</label><input id="oz" type="number" min="0.5" step="0.5" value="4.5"></div>
+  </div>
+  <div class="totals">
+    <div class="stat"><b id="p1">$0</b><span>Per raw pound</span></div>
+    <div class="stat"><b id="p2">$0</b><span>Per cooked pound</span></div>
+    <div class="stat"><b id="p3">$0</b><span>Per serving</span></div>
+    <div class="stat"><b id="p4">0</b><span>Servings from this batch</span></div>
+  </div>
+  <div class="bar noprint" style="margin-top:14px">
+    <div><label for="ppMeat">Save this raw price as</label><select id="ppMeat" class="nosave"></select></div>
+    <div><label for="ppStore">Store</label><input id="ppStore" class="nosave" type="text" placeholder="e.g. Walmart, Sam's, Restaurant Depot"></div>
+    <button id="bSavePP" type="button">Update my store price</button>
+  </div>
+  <p class="note" id="msgPP"></p>
+  <h3 class="sm" style="margin-top:22px">Price a side from your recipe</h3>
+  <p class="note" style="margin:0 0 12px">Add up what one batch of a side costs you in ingredients, then enter how much it makes. This gives the real cost per pound, per pan and per scoop, and you can save it to your store prices.</p>
+  <div class="grid">
+    <div><label for="rsSide">Side</label><select id="rsSide" class="nosave"></select></div>
+    <div><label for="rsCost">Ingredient cost for one batch ($)</label><input id="rsCost" class="nosave" type="number" min="0" step="0.01" placeholder="e.g. 18.50"></div>
+    <div><label for="rsYield">The batch makes</label><input id="rsYield" class="nosave" type="number" min="0" step="0.1" placeholder="e.g. 2"></div>
+    <div><label for="rsUnit">Measured in</label><select id="rsUnit" class="nosave"><option value="pan">Pans (size picked on the Menu tab)</option><option value="lb">Cooked pounds</option><option value="qt">Quarts</option></select></div>
+  </div>
+  <div class="totals">
+    <div class="stat"><b id="rs1">—</b><span>Per cooked pound</span></div>
+    <div class="stat"><b id="rs2">—</b><span id="rs2L">Per pan</span></div>
+    <div class="stat"><b id="rs3">—</b><span id="rs3L">Per scoop</span></div>
+    <div class="stat"><b id="rs4">—</b><span>This side for this job</span></div>
+  </div>
+  <div class="row noprint"><button id="bSaveRS" type="button">Save to my store prices</button><span id="msgRS" class="note" style="margin:0"></span></div>
+</section>
+
+<section>
+  <h2>My store prices</h2>
+  <p class="note" style="margin:0 0 12px">Your current prices, kept on this device for every job. Edit a price when you see it change at the store, and the date updates by itself. Prices older than <span class="staleN">30</span> days are flagged. To add, rename or remove items, use the Setup tab. New jobs start with these prices. Jobs you already quoted keep their own prices until you press "Use my latest store prices" on the Menu tab.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Item</th><th class="num">Price</th><th>Unit</th><th>Store</th><th>Last updated</th></tr></thead>
+      <tbody id="storeTbl"></tbody>
+    </table>
+  </div>
+  <div class="row noprint"><button id="bResetStore" type="button" class="sec sm">Reset to starting prices</button><span id="msgS" class="note" style="margin:0"></span></div>
+  <p class="note">Starting prices came from Walmart.com listings, not a specific store's shelf. Side prices are an average cost per cooked pound (about $1.85) estimated from Walmart prices for mac and cheese ingredients, baked beans, collards and potatoes. Rice and both kinds of fries were not checked. Replace these with your own numbers.</p>
+</section>
+
+<section>
+  <details>
+    <summary>How the math works</summary>
+    <pre><span id="mathTop"></span>
+
+food sales     = price × (adults + kids × kids%)
+revenue        = food sales × (1 + service%) + delivery fee
+sales tax      = revenue × tax%            (collected for the state, not your money)
+customer total = revenue + sales tax
+card fees      = customer total × fee%
+costs          = food + labor + fuel + travel + packaging × all guests + other
+profit         = revenue − card fees − costs
+margin         = profit ÷ revenue
+
+price for margin m: revenue needed = costs ÷ (1 − fee% × (1 + tax%) − m)
+                    price = (revenue needed − delivery) ÷ (1 + service%) ÷ (adults + kids × kids%)</pre>
+    <p class="note">Sales tax is applied to the whole bill, including delivery and service charges. Many states tax catering, and some tax delivery and service charges as well. Rules differ by state and city, so confirm with your state revenue department.</p>
+  </details>
+</section>
+</div>
+
+<div id="tab-taxes" class="panel" role="tabpanel" hidden>
+<details class="qref noprint" open>
+  <summary>Quick guide: tax records</summary>
+  <div class="qcols">
+    <div><ul>
+      <li>Pick a tax year. <b>Income</b> counts payments you recorded on each job's Payments tab, by payment date. <b>Expenses</b> count the costs of jobs whose event date is in that year.</li>
+      <li>Sales tax you collected is taken out of income. It belongs to the state.</li>
+      <li>Each expense shows the Schedule C line it usually goes on.</li>
+    </ul></div>
+    <div><ul>
+      <li>The amounts come from what you entered in each job. Update jobs with what you actually spent, and keep your receipts.</li>
+      <li><b>Download tax summary</b> gives your preparer the totals. <b>Job-by-job detail</b> lists every job. Both open in Excel or Google Sheets.</li>
+      <li>This is a record-keeping aid, not tax advice. Check categories with your tax preparer.</li>
+    </ul></div>
+  </div>
+</details>
+<section>
+  <h2>Tax records</h2>
+  <div class="grid">
+    <div><label for="txYear">Tax year</label><select id="txYear" class="nosave"></select></div>
+    <div style="grid-column:span 2;display:flex;align-items:flex-end"><label class="chk" for="txLabor"><input type="checkbox" id="txLabor" class="nosave"><span>Count labor as an expense. Check this only if you paid wages or contractors; your own time isn't deductible.</span></label></div>
+  </div>
+  <div class="tablewrap" style="margin-top:14px"><table class="slim tx"><thead><tr><th>Item</th><th>Usually goes on (Schedule C)</th><th class="num">Amount</th></tr></thead><tbody id="txBody"></tbody></table></div>
+  <div class="warns" id="txWarn"></div>
+  <div class="row noprint">
+    <button type="button" data-tx="summary">Download tax summary (CSV)</button>
+    <button type="button" class="sec" data-tx="jobs">Download job-by-job detail (CSV)</button>
+    <button type="button" class="sec" data-tx="income" id="txIncomeBtn" hidden>Download subscription income (CSV)</button>
+    <span id="msgTX" class="note" style="margin:0" aria-live="polite"></span>
+  </div>
+  <p class="note" style="font-size:.78rem">Not tax advice. These are records built from what you entered in Catering Hub. Rules depend on your situation, so confirm with a tax professional before filing.</p>
+</section>
+</div>
+
+<div id="tab-access" class="panel" role="tabpanel" hidden>
+<details class="qref noprint" open>
+  <summary>Quick guide: paid access (only you see this tab)</summary>
+  <div class="qcols">
+    <div>
+      <h4>New customer</h4>
+      <ul>
+        <li>Invite them in Netlify (Identity → Invite users).</li>
+        <li>Their <b>free trial</b> (3 days unless you change it below) starts the first time they sign in. You get a "New trial" notification with their email.</li>
+        <li>When they pay (online, or you press <b>Record payment</b>), the trial ends and paid access starts.</li>
+        <li>When a trial runs out, they see a "trial ended" lock screen with your Subscribe button. Each email gets only one trial.</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Renewals and lockouts</h4>
+      <ul>
+        <li><b>+ days</b> adds a payment. If they're still active, the days are added to their current end date, so they never lose days for paying early.</li>
+        <li>When the date passes, they're locked out at the start of the next day (your time zone). Their jobs stay saved and come back when you record a payment.</li>
+        <li>Customers see a reminder 5 days before their access ends.</li>
+        <li><b>Lock now</b> ends access today. <b>Remove</b> deletes their access record (to remove the login, delete them in Netlify Identity too).</li>
+      </ul>
+    </div>
+  </div>
+</details>
+<section>
+  <h2>Payment notifications</h2>
+  <p class="note" style="margin:0 0 10px">Online payments renew access automatically and show up here with the customer's email. New ones are highlighted.</p>
+  <div class="tablewrap"><table class="ie ac" style="min-width:640px"><thead><tr><th>When</th><th>Customer</th><th>What</th><th class="num">Amount</th><th>Result</th></tr></thead><tbody id="acNotes"></tbody></table></div>
+</section>
+<section>
+  <h2>Paid access</h2>
+  <div class="totals" id="acStats" style="margin-top:0"></div>
+  <h3 class="sm">Record a payment</h3>
+  <div class="addbar" style="border:0;margin-top:0;padding-top:0">
+    <div><label for="acEmail">Customer email (the one you invited)</label><input id="acEmail" class="nosave" type="email" list="acEmails" autocomplete="off"></div>
+    <div style="flex:0 1 120px"><label for="acDays">Days to add</label><input id="acDays" class="nosave" type="number" min="1" max="3660" value="30"></div>
+    <div style="flex:0 1 120px"><label for="acAmt">Amount ($)</label><input id="acAmt" class="nosave" type="number" min="0" step="0.01"></div>
+    <div style="flex:0 1 150px"><label for="acMeth">Paid by</label><select id="acMeth" class="nosave" data-opts="method"></select></div>
+    <div><label for="acNote">Note (optional)</label><input id="acNote" class="nosave" type="text" placeholder="e.g. last 4 of card, check #"></div>
+    <button type="button" data-ac="extendForm">Record payment</button>
+  </div>
+  <datalist id="acEmails"></datalist>
+  <p id="msgAC" class="note" aria-live="polite"></p>
+  <div class="tablewrap"><table class="ie ac" style="min-width:760px"><thead><tr><th>Customer</th><th>Status</th><th>Access through</th><th>Last used</th><th>Last payment</th><th></th></tr></thead><tbody id="acList"></tbody></table></div>
+  <div class="row noprint"><button type="button" class="sec sm" data-ac="history">Download all subscription payments (CSV)</button></div>
+</section>
+<section>
+  <h2>Lock screen and defaults</h2>
+  <div class="grid">
+    <div style="grid-column:1/-1"><label for="acContact">How to renew (shown on the lock screen and in the reminder)</label><textarea id="acContact" class="nosave" placeholder="e.g. Text Smoke Shack at 555-123-4567 or Cash App $smokeshack, $10/month"></textarea></div>
+    <div><label for="acDefDays">Days per payment</label><input id="acDefDays" class="nosave" type="number" min="1" max="3660" value="30"></div>
+    <div><label for="acPrice">Price per payment ($)</label><input id="acPrice" class="nosave" type="number" min="0" step="0.01" placeholder="10" value="10"></div>
+    <div><label for="acTrial">Free trial for new users (days; 0 = no trial)</label><input id="acTrial" class="nosave" type="number" min="0" max="90" value="3"></div>
+  </div>
+  <h3 class="sm">Online payments (Stripe)</h3>
+  <p class="note" id="acStripe" style="margin:0 0 10px"></p>
+  <div class="grid">
+    <div style="grid-column:1/-1"><label for="acPayLink">Stripe payment link (customers get a Pay now button)</label><input id="acPayLink" class="nosave" type="url" placeholder="https://buy.stripe.com/..."></div>
+    <div style="grid-column:1/-1"><label for="acPortal">Stripe customer portal link (optional: lets customers update their card or cancel)</label><input id="acPortal" class="nosave" type="url" placeholder="https://billing.stripe.com/p/login/..."></div>
+  </div>
+  <div class="row"><button type="button" data-ac="config">Save</button><span id="msgACC" class="note" style="margin:0" aria-live="polite"></span></div>
+</section>
+</div>
+
+<div id="tab-setup" class="panel" role="tabpanel" hidden>
+<details class="qref noprint" open>
+  <summary>Quick guide: how Setup works</summary>
+  <div class="qcols">
+    <div>
+      <h4>Menu items</h4>
+      <ul>
+        <li>Rename any meat, side, extra or sauce, and change how much it makes (yield, package size, scoop, lb per quart, pack or bottle size).</li>
+        <li><b>Add:</b> pick the type, enter a name and price, press Add item, then fill in its amounts in the table.</li>
+        <li><b>↑ ↓</b> reorders items. <b>Delete</b> needs two clicks and tells you how many saved jobs use the item.</li>
+        <li><b>On for new jobs</b> decides whether an item starts checked on a new job.</li>
+        <li>Prices are set on the <b>My prices</b> tab.</li>
+      </ul>
+      <h4>Portions and calculations</h4>
+      <ul>
+        <li>How much kids eat and what you call them, extra meat for 2+ meats, side scoop scaling, purchase rounding, old-price flag, food-cost warning and target range.</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Dropdown choices</h4>
+      <ul>
+        <li>Edit, add or remove appetite levels, serving sizes, pan sizes and payment methods (one per line).</li>
+      </ul>
+      <h4>Defaults for new jobs</h4>
+      <ul>
+        <li>Business name, contact, tax, deposit, labor rate, prices and notes that every new job starts with.</li>
+        <li><b>Use the open job's values</b> copies the current job in as your defaults.</li>
+        <li>One button puts your business name and contact on all saved jobs.</li>
+      </ul>
+      <h4>Jobs you already saved</h4>
+      <ul>
+        <li>Item details (yield, scoop size…) change amounts in saved jobs too. Each job keeps its own prices.</li>
+        <li>Items you add later start <b>off</b> in older jobs.</li>
+        <li>If you change a dropdown choice, a saved job keeps its old value, shown as "Earlier setting", until you pick a new one.</li>
+        <li>Everything saves to your account. Sign in on any device to see the same jobs and prices.</li>
+        <li><b>Download backup</b> (under More) saves a copy of jobs, prices, menu items and settings.</li>
+      </ul>
+    </div>
+  </div>
+</details>
+<section>
+  <h2>Menu items</h2>
+  <p class="note" style="margin:0 0 4px">The items every job can use. Rename them, change how much they make, reorder them, add your own or delete ones you never sell. These changes apply to every job, including saved ones. Prices are set on the My prices tab. "On for new jobs" decides whether an item starts checked when you make a new job.</p>
+  <div id="ieWrap"></div>
+  <p class="note">Cooked lb per quart is used to count pans. To check one, fill a quart container with the cooked side, weigh it, subtract the container, and enter the weight.</p>
+  <div class="addbar">
+    <div><label for="ieKind">Add a new</label><select id="ieKind" class="nosave"><option value="meat">Meat</option><option value="side">Side</option><option value="count">Counted extra (buns, rolls, cornbread)</option><option value="sauce">Sauce or condiment (by the bottle)</option></select></div>
+    <div><label for="ieName">Name</label><input id="ieName" class="nosave" type="text" placeholder="e.g. Smoked sausage"></div>
+    <div><label for="iePrice" id="iePriceL">Price ($ per raw lb)</label><input id="iePrice" class="nosave" type="number" min="0" step="0.01" placeholder="0.00"></div>
+    <button type="button" data-act="ieAdd">Add item</button>
+  </div>
+  <div class="row noprint"><button type="button" class="sec sm" data-act="ieReset">Reset menu items to the starting list</button><span id="msgIE" class="note" style="margin:0" aria-live="polite"></span></div>
+</section>
+
+<section>
+  <h2>Portions and calculations</h2>
+  <p class="note" style="margin:0 0 12px">Rules the calculator uses for every job.</p>
+  <div class="grid" id="stGen"></div>
+  <div class="row noprint"><button type="button" class="sec sm" data-act="stReset">Reset these and the choices below to starting values</button><span id="msgST" class="note" style="margin:0" aria-live="polite"></span></div>
+</section>
+
+<section>
+  <h2>Choices in the dropdowns</h2>
+  <p class="note" style="margin:0 0 4px">Saved jobs keep the value they were quoted with. If you change a choice, pick it again in that job to use the new value.</p>
+  <div id="stLists"></div>
+  <h3 class="sm">Payment methods</h3>
+  <label for="stMethods">One per line</label><textarea id="stMethods" class="nosave" rows="5"></textarea>
+  <p class="note">Starting pan sizes: the 120 oz half pan, 195 oz extra-deep half pan and 346 oz full pan are common foil sizes from Handi-Foil and Durable Packaging listings. The steel half pan is Vollrath's 4.3 qt spec. Starting pan prices: about $0.77 each (Walmart Eco-Foil half deep, 30 for $22.99), $2.50 (Handi-Foil extra deep, 20 for $49.99) and $2.76 (Pactiv full deep, 40 for $110.23).</p>
+</section>
+
+<section>
+  <h2>Defaults for new jobs</h2>
+  <p class="note" style="margin:0 0 12px">Every new job starts with these values. Jobs you already made keep their own.</p>
+  <div class="grid" id="stDef"></div>
+  <div class="row noprint">
+    <button type="button" class="sec sm" data-act="dfFromJob">Use the open job's values</button>
+    <button type="button" class="sec sm" data-act="bizAll">Put this business name and contact on all saved jobs</button>
+    <button type="button" class="sec sm" data-act="dfClear">Clear my defaults</button>
+    <span id="msgDF" class="note" style="margin:0" aria-live="polite"></span>
+  </div>
+</section>
+</div>
+</main>
+
+
+<script>
+/* Starting menu. The live menu is store.items, which the Setup tab edits. */
+const DEFAULT_ITEMS = [
+  {id:'brisk', n:'Brisket',                     kind:'meat', y:0.50, price:4.96, note:'Whole packer, 12–22 lb', pack:12, packName:'packer'},
+  {id:'pork',  n:'Pulled pork',                 kind:'meat', y:0.55, price:2.20, note:'Bone-in butts', pack:8, packName:'butt'},
+  {id:'tails', n:'Turkey tails',                kind:'meat', y:0.90, price:4.64, note:'Already smoked, reheat only', pack:2, packName:'tray'},
+  {id:'tlegs', n:'Turkey legs',                 kind:'meat', y:0.90, price:4.94, note:'Already smoked; each leg 1.4–2.5 lb', pack:2, packName:'leg'},
+  {id:'chick', n:'Smoked whole chicken halves', kind:'meat', y:0.70, price:1.46, note:'Whole chickens 5–7 lb, you split them', pack:6, packName:'whole chicken'},
+  {id:'ribs',  n:'Spare ribs',                  kind:'meat', y:0.60, price:2.58, note:'Racks 4–6 lb', pack:5, packName:'rack'},
+  {id:'mac',    n:'Mac and cheese',        kind:'side', oz:5,   raw:0.75, dens:2.0, price:1.85, rawNote:'dry pasta + cheese'},
+  {id:'beans',  n:'Baked beans',           kind:'side', oz:4,   raw:1.0,  dens:2.2, price:1.85},
+  {id:'greens', n:'Collard greens',        kind:'side', oz:4,   raw:1.5,  dens:1.8, price:1.85, rawNote:'raw greens'},
+  {id:'rice',   n:'Fried rice',            kind:'side', oz:5,   raw:0.5,  dens:1.5, price:1.85, rawNote:'dry rice'},
+  {id:'mash',   n:'Mashed potatoes',       kind:'side', oz:5,   raw:0.9,  dens:2.1, price:1.85, rawNote:'raw potatoes'},
+  {id:'fries',  n:'Fries',                 kind:'side', oz:4,   raw:1.1,  dens:0.6, price:1.85, rawNote:'frozen'},
+  {id:'sfries', n:'Sweet potato fries',    kind:'side', oz:3.5, raw:1.1,  dens:0.6, price:1.85, rawNote:'frozen'},
+  {id:'sgb',    n:'Smothered green beans', kind:'side', oz:4,   raw:0.9,  dens:1.9, price:1.85},
+  {id:'buns',  n:'Buns',      kind:'count', per:1.25, pack:8, price:1.48, packName:'8-pack', each:'buns'},
+  {id:'sauce', n:'BBQ sauce', kind:'sauce', oz:2, bottle:18, price:1.72}
+].map(d=>({def:true, ...d}));
+/* Fields each kind needs, with the values a newly added item starts with */
+const KIND_NEW = {
+  meat:{y:0.6, pack:10, packName:'pack', note:''},
+  side:{oz:4, raw:1, dens:2, rawNote:'', note:''},
+  count:{per:1, pack:12, packName:'pack', each:'pieces', note:''},
+  sauce:{oz:2, bottle:18, note:''}
+};
+const DEFAULT_SETTINGS = {
+  kidFactor:50, kidsLabel:'Kids under 12', meatShare:1.15, sideBase:4, sideMin:0.4, sideMax:1.5,
+  roundLb:0.5, staleDays:30, fcWarn:40, fcLow:28, fcHigh:35,
+  appetite:[{label:'Light (lunch, other food around)',v:0.8},{label:'Normal',v:1},{label:'Hungry (dinner, big eaters)',v:1.25}],
+  styles:[{label:'Sandwich',oz:4.5},{label:'Plate',oz:6},{label:'Big plate',oz:8}],
+  pans:[{label:'Foil half pan, deep (2½")',name:'half pan',cap:120,price:0.77},
+        {label:'Foil half pan, extra deep (4")',name:'extra-deep half pan',cap:195,price:2.50},
+        {label:'Foil full pan, deep (3⅜")',name:'full pan',cap:346,price:2.76},
+        {label:'Steel half pan, 2½" (4.3 qt), reusable',name:'steel half pan',cap:138,price:0}],
+  methods:['Cash','Card','Check','Zelle','Cash App','Venmo','PayPal','Other'],
+  defaults:{}
+};
+const NUM_SETTINGS=['kidFactor','meatShare','sideBase','sideMin','sideMax','roundLb','staleDays','fcWarn','fcLow','fcHigh'];
+const GROUPS=[['Meats',['meat']],['Sides',['side']],['Extras',['count','sauce']]];
+let ITEMS=[], PRICED=[];
+const UNIT = i => i.kind==='meat'?'per raw lb':i.kind==='side'?'per cooked lb':i.kind==='count'?`per ${i.packName||'pack'}`:`per ${i.bottle} oz bottle`;
+const T = () => store.settings;
+
+const $ = id => document.getElementById(id);
+const clone = o => JSON.parse(JSON.stringify(o));
+const money = v => (v<0?'−$':'$') + Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const money0 = v => (v<0?'−$':'$') + Math.abs(Math.round(v)).toLocaleString('en-US');
+const lb = v => v.toFixed(1) + ' lb';
+const lbB = v => v.toFixed(T().roundLb<0.5?2:1) + ' lb';
+const fmtN = v => String(+(+v).toFixed(2));
+const up = v => { const st=T().roundLb>0?T().roundLb:0.5; return Math.ceil(v/st - 1e-9)*st; };
+const clamp = (v,a,b) => Math.min(b,Math.max(a,v));
+const num = id => Math.max(0, parseFloat($(id).value) || 0);
+const r2 = v => Math.round(v*100)/100;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+const fmtDate = iso => iso ? new Date(iso+'T12:00').toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '';
+const daysAgo = iso => iso ? Math.floor((Date.now()-new Date(iso+'T12:00').getTime())/864e5) : 0;
+
+/* ---------- storage (jobs + store price list) ---------- */
+const KEY='cookoutCalc.v2';
+let store={cur:null,jobs:{},prices:{},items:clone(DEFAULT_ITEMS),settings:clone(DEFAULT_SETTINGS)}, dirty=false;
+let payments=[], jobNo='';
+function cleanItems(a){
+  if(!Array.isArray(a)) return clone(DEFAULT_ITEMS);
+  const seen=new Set();
+  return a.filter(d=>d && d.id && KIND_NEW[d.kind] && !seen.has(d.id) && seen.add(d.id))
+    .map(d=>{ const o={...KIND_NEW[d.kind], def:true, ...d};
+      o.n=String(o.n||'Item'); o.price=isFinite(+o.price)?+o.price:0; o.def=!!o.def;
+      Object.keys(KIND_NEW[d.kind]).forEach(k=>{ const b=KIND_NEW[d.kind][k];
+        if(typeof b==='number' && !(isFinite(+o[k]) && +o[k]>0)) o[k]=b; else if(typeof b==='number') o[k]=+o[k]; });
+      return o; });
+}
+function cleanSettings(s){
+  const b=clone(DEFAULT_SETTINGS); if(!s||typeof s!=='object') return b;
+  const o={...b,...s};
+  NUM_SETTINGS.forEach(k=>{ o[k]=isFinite(+o[k])?+o[k]:b[k]; });
+  ['appetite','styles','pans','methods'].forEach(k=>{ if(!Array.isArray(o[k])||!o[k].length) o[k]=b[k]; });
+  o.kidsLabel=String(o.kidsLabel||b.kidsLabel);
+  o.defaults=o.defaults&&typeof o.defaults==='object'?o.defaults:{};
+  return o;
+}
+function foldDens(dens){   // older versions kept side weights separately
+  if(!dens) return;
+  Object.keys(dens).forEach(id=>{ const d=store.items.find(x=>x.id===id); if(d && d.kind==='side' && isFinite(dens[id]) && dens[id]>0) d.dens=+dens[id]; });
+}
+function useData(s){
+  s=s||{};
+  store={cur:s.cur||null,jobs:s.jobs||{},prices:s.prices||{},items:cleanItems(s.items),settings:cleanSettings(s.settings)};
+  foldDens(s.dens);
+}
+/* Turn store.items into the runtime list, keeping the open job's checkboxes and prices */
+function rebuildCatalog(){
+  const prev={}; PRICED.forEach(i=>prev[i.id]={on:i.on,price:i.price});
+  ITEMS=[]; PRICED=[];
+  GROUPS.forEach(([g,kinds])=>{
+    const list=store.items.filter(d=>kinds.includes(d.kind)); if(!list.length) return;
+    ITEMS.push({g});
+    list.forEach(d=>{ const o={...d, base:d.price}, p=prev[d.id];
+      o.on = p ? p.on : !!d.def; o.price = p ? p.price : storePrice(d.id);
+      ITEMS.push(o); PRICED.push(o); });
+  });
+}
+/* ---------- account sign-in (Netlify Identity) ---------- */
+const ID='/.netlify/identity', AKEY='cookoutCalc.auth', DATA_URL='/.netlify/functions/data';
+let auth=null, freshLogin=false;
+function saveAuth(){ try{ auth?localStorage.setItem(AKEY,JSON.stringify(auth)):localStorage.removeItem(AKEY); }catch(_){} }
+function loadAuth(){ try{ auth=JSON.parse(localStorage.getItem(AKEY)||'null'); }catch(_){ auth=null; } }
+async function idErr(r){ let m=''; try{ const j=await r.json(); m=j.error_description||j.msg||j.error||''; }catch(_){} return m; }
+async function takeTokens(t){
+  freshLogin=true;
+  auth={access_token:t.access_token, refresh_token:t.refresh_token, expires_at:Date.now()+(t.expires_in||3600)*1000};
+  const r=await fetch(ID+'/user',{headers:{Authorization:'Bearer '+auth.access_token}});
+  if(!r.ok) throw new Error('Could not load your account.');
+  const u=await r.json(); auth.email=u.email; auth.id=u.id; saveAuth();
+}
+async function idLogin(email,pw){
+  const r=await fetch(ID+'/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'password',username:email,password:pw})});
+  if(!r.ok){ throw new Error(r.status===400||r.status===401?'That email and password don\u2019t match an account.':'Sign-in failed. Try again.'); }
+  await takeTokens(await r.json());
+}
+async function accessToken(){
+  if(!auth||!auth.refresh_token) throw new Error('signin');
+  if(Date.now()<auth.expires_at-60000) return auth.access_token;
+  const r=await fetch(ID+'/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'refresh_token',refresh_token:auth.refresh_token})});
+  if(r.status===400||r.status===401){ auth=null; saveAuth(); throw new Error('signin'); }
+  if(!r.ok) throw new Error('network');
+  const t=await r.json(); auth.access_token=t.access_token; auth.refresh_token=t.refresh_token||auth.refresh_token;
+  auth.expires_at=Date.now()+(t.expires_in||3600)*1000; saveAuth(); return auth.access_token;
+}
+const ACCESS_URL='/.netlify/functions/access';
+async function api(method,body,url){
+  const tk=await accessToken();
+  const r=await fetch(url||DATA_URL,{method,headers:{Authorization:'Bearer '+tk,'Content-Type':'application/json'},body,cache:'no-store'});
+  if(r.status===401){ let d=''; try{ d=(await r.json()).detail||''; }catch(_){} auth=null; saveAuth(); const e=new Error('signin'); e.detail=d; throw e; }
+  if(r.status===402){ let info={}; try{ info=await r.json(); }catch(_){} const e=new Error('locked'); e.info=info; throw e; }
+  return r;
+}
+
+/* ---------- paid access: lock screen, reminder, owner tab ---------- */
+let ACC={}, AC=null;
+function showLocked(info){
+  info=info||{};
+  const lost=pending;
+  pending=false; clearTimeout(saveTimer); clearTimeout(retryTimer);
+  const msg = info.reason==='trialEnded'
+    ? `Your free trial ended on ${fmtDate(info.paidThrough)}. Subscribe to keep using Catering Hub. Everything you set up during the trial is saved and will be here as soon as you do.`
+    : info.reason==='expired'
+    ? `Your Catering Hub access ended on ${fmtDate(info.paidThrough)}. Your jobs and prices are saved and will be here as soon as access is renewed.`
+    : 'Your account is set up, but access hasn\u2019t been turned on yet. You\u2019ll be able to sign in as soon as your payment is recorded.';
+  showGate('locked', msg+(lost?' Changes made after access ended weren\u2019t saved.':''));
+  $('gContact').textContent = info.contact ? 'To renew: '+info.contact : '';
+  ACC={...ACC,payLink:info.payLink||'',price:info.price||0};
+  $('gPay').hidden=!info.payLink; $('gPay').textContent=info.reason==='trialEnded'?(ACC.price?`Subscribe for ${money(ACC.price)}`:'Subscribe'):payLabel();
+  document.querySelector('[data-gate="recheck"]').textContent=info.reason==='trialEnded'?'I\u2019ve subscribed: check again':'I\u2019ve renewed: check again';
+}
+function updateAccess(a){
+  ACC=a||{};
+  const isOwnerUI=!!ACC.owner;
+  document.querySelector('[data-tab="access"]').hidden=!isOwnerUI;
+  const b=$('accBanner');
+  if(!isOwnerUI && ACC.trial && isFinite(ACC.daysLeft)){
+    const left = ACC.daysLeft===0 ? 'ends today' : `${ACC.daysLeft+1} day${ACC.daysLeft?'s':''} left`;
+    b.innerHTML=esc(`Free trial: ${left} (through ${fmtDate(ACC.paidThrough)}). Subscribe anytime to keep your jobs and prices. `+(ACC.contact&&!ACC.payLink?'To subscribe: '+ACC.contact:''))
+      +(ACC.payLink?` <button type="button" class="sm" data-gate="pay">${esc(ACC.price?`Subscribe for ${money(ACC.price)}`:'Subscribe')}</button>`:'');
+    b.classList.add('show');
+  } else if(!isOwnerUI && isFinite(ACC.daysLeft) && ACC.daysLeft<=5){
+    const when = ACC.daysLeft===0 ? 'today' : ACC.daysLeft===1 ? 'tomorrow' : `in ${ACC.daysLeft} days`;
+    b.innerHTML=esc(`Your access ends ${when} (${fmtDate(ACC.paidThrough)}). `+(ACC.contact?'To renew: '+ACC.contact:(ACC.payLink?'':'Contact the owner to renew.')))
+      +(ACC.payLink?` <button type="button" class="sm" data-gate="pay">${esc(payLabel())}</button>`:'');
+    b.classList.add('show');
+  } else { b.textContent=''; b.classList.remove('show'); }
+  $('bPortal').hidden=isOwnerUI||!ACC.portalLink;
+}
+let acLoaded=false, acViewRead='';
+async function loadAccess(viewing){
+  if(!ACC.owner) return;
+  try{
+    const r=await api('GET',undefined,ACCESS_URL); const j=await r.json();
+    if(!(r.ok&&j.owner)) return;
+    AC=j; if(viewing) acViewRead=j.config.lastRead||'';
+    renderAccess(!acLoaded); acLoaded=true;
+    if(viewing && unread()>0){ try{ const r2=await api('POST',JSON.stringify({action:'seen'}),ACCESS_URL); if(r2.ok){ AC=await r2.json(); renderBadge(); } }catch(_){} }
+  }catch(e){ if(viewing) $('msgAC').textContent='Couldn\u2019t load the access list. Check your connection.'; }
+}
+const unread=()=>AC?AC.notes.filter(n=>n.at>(AC.config.lastRead||'')).length:0;
+function renderBadge(){ const n=unread(), b=$('acBadge'); b.hidden=!n; b.textContent=n; }
+function acStatus(p){
+  if(!p.paidThrough) return ['due','Not activated'];
+  if(p.trial) return p.daysLeft<0 ? ['over','Trial ended'] : ['trial', p.daysLeft===0?'Trial: last day':`Trial: ${p.daysLeft+1} days left`];
+  if(p.daysLeft<0) return ['over','Expired'];
+  if(p.daysLeft<=7) return ['due',p.daysLeft===0?'Ends today':`Ends in ${p.daysLeft} day${p.daysLeft>1?'s':''}`];
+  return ['paid','Active'];
+}
+function ago(iso){
+  if(!iso) return '<span class="sub">never</span>';
+  const m=(Date.now()-Date.parse(iso))/6e4;
+  return esc(m<60?'within the hour':m<1440?`${Math.floor(m/60)} hr ago`:new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}));
+}
+function renderAccess(withConfig){
+  if(!AC) return;
+  const L=AC.list||[], d=AC.config.defaultDays||30;
+  const c={act:0,soon:0,exp:0,ina:0,tri:0};
+  L.forEach(p=>{ if(!p.paidThrough) c.ina++; else if(p.daysLeft<0) c.exp++; else if(p.trial) c.tri++; else { c.act++; if(p.daysLeft<=7) c.soon++; } });
+  $('acStats').innerHTML=[[c.act,'Paid and active'],[c.tri,'On free trial'],[c.soon,'Paid, ending within 7 days'],[c.exp,'Expired or trial ended'],[c.ina,'Not activated']]
+    .map(x=>`<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  $('acEmails').innerHTML=L.map(p=>`<option value="${esc(p.email)}">`).join('');
+  $('acList').innerHTML = L.length ? L.map(p=>{
+    const st=acStatus(p), pay=[...(p.log||[])].reverse().find(x=>x.action==='payment'), e=esc(p.email);
+    const payTxt=pay?esc(fmtDate(pay.at.slice(0,10)))+` <span class="sub">${pay.amount?money(pay.amount)+' · ':''}${esc(pay.method||'')}${pay.method?' · ':''}+${pay.days} days${pay.note?' · '+esc(pay.note):''}</span>`:'<span class="sub">none</span>';
+    return `<tr><td style="overflow-wrap:anywhere">${e}</td>
+      <td><span class="badge ${st[0]}">${st[1]}</span></td>
+      <td>${p.paidThrough?esc(fmtDate(p.paidThrough)):'—'}<div style="margin-top:6px"><input type="date" class="nosave" data-acdate="${e}" value="${esc(p.paidThrough||'')}" aria-label="Access through date for ${e}"> <button type="button" class="sec sm" data-ac="setdate" data-email="${e}">Set</button></div></td>
+      <td>${ago(p.lastSeen)}</td>
+      <td>${payTxt}</td>
+      <td><div class="acts"><button type="button" class="sm" data-ac="extend" data-email="${e}">+${d} days</button>
+        <button type="button" class="sec sm" data-ac="lock" data-email="${e}"${p.paidThrough&&p.daysLeft>=0?'':' disabled'}>Lock now</button>
+        <button type="button" class="x" data-ac="remove" data-email="${e}">Remove</button></div></td></tr>`;
+  }).join('') : '<tr><td colspan="6" class="sub">No customers yet. Record a payment above, or they\u2019ll appear here after they first sign in.</td></tr>';
+  const NT={payment:'Payment',failed:'Failed',refund:'Refund',canceled:'Canceled',unmatched:'Unmatched',trial:'New trial'};
+  $('acNotes').innerHTML = AC.notes.length ? AC.notes.slice(0,40).map(n=>`<tr class="${n.at>acViewRead?'new':''}">
+      <td style="white-space:nowrap">${esc(new Date(n.at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</td>
+      <td style="overflow-wrap:anywhere">${esc(n.email||'(no match)')}</td>
+      <td><span class="nt ${esc(n.type)}">${esc(NT[n.type]||n.type)}</span> <span class="sub">${esc(n.method||'')}</span></td>
+      <td class="num">${n.amount?money(n.amount):'—'}</td>
+      <td>${n.type==='payment'?`Access extended through ${esc(fmtDate(n.through))}`:n.type==='trial'?esc(`${n.msg||'Started a free trial.'} Trial runs through ${fmtDate(n.through)}.`):esc(n.msg||'')}</td></tr>`).join('')
+    : '<tr><td colspan="5" class="sub">No payment notifications yet. When customers pay online, the payment shows up here with their email, and their access is renewed automatically.</td></tr>';
+  $('acStripe').textContent = AC.stripeReady ? 'Stripe connection: ready. Payments through your link renew access automatically.'
+    : 'Stripe connection: not set up yet. Follow "Online payments" in the setup guide (you add STRIPE_WEBHOOK_SECRET in Netlify). Until then, record payments by hand above.';
+  renderBadge();
+  if(withConfig){ $('acContact').value=AC.config.contact||''; $('acDefDays').value=d; $('acDays').value=d;
+    $('acPrice').value=AC.config.price||''; $('acTrial').value=AC.config.trialDays??3; $('acAmt').value=AC.config.price||''; $('acPayLink').value=AC.config.payLink||''; $('acPortal').value=AC.config.portalLink||''; }
+}
+/* ---------- files ---------- */
+async function saveFile(fn,data,mime,msgEl,okText){
+  let dl=null; try{ if(window.claude&&window.claude.use) dl=await window.claude.use('downloads'); }catch(_){}
+  if(dl){ try{ await dl.save({filename:fn,data}); if(msgEl) msgEl.textContent=okText||'Downloaded.'; }
+    catch(err){ if(msgEl) msgEl.textContent = err&&err.code==='declined' ? 'Download cancelled.' : 'Files can\u2019t be downloaded in this view. Open this page in Chrome, Safari or Edge.'; } return; }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:mime})); a.download=fn;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  if(msgEl) msgEl.textContent=okText||'Downloaded.';
+}
+const csvCell=v=>{ if(typeof v==='number') return String(Math.round(v*100)/100); let t=String(v??''); if(/^[=+\-@\t\r]/.test(t)) t="'"+t; return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t; };
+const toCSV=rows=>'\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+
+/* ---------- payments: pay button, notifications ---------- */
+function payUrl(){
+  if(!ACC.payLink||!auth) return '';
+  return ACC.payLink+(ACC.payLink.includes('?')?'&':'?')+'locked_prefilled_email='+encodeURIComponent(auth.email||'')+'&client_reference_id='+encodeURIComponent(auth.id||'');
+}
+function payLabel(){ return ACC.price?`Pay ${money(ACC.price)} now`:'Pay now'; }
+
+/* ---------- tax records ---------- */
+let TXSUB=null;
+const yearOf=d=>d?String(d).slice(0,4):'';
+function jobModel(job){
+  const keep=PRICED.map(i=>[i,i.on,i.price]);
+  PRICED.forEach(i=>{ const s=(job.items||[]).find(x=>x.id===i.id); i.on=s?s.on:false; i.price=s&&isFinite(s.price)?s.price:storePrice(i.id); });
+  try{ const v=job.v||{}; return model(readState(id=>v[id]!==undefined?v[id]:defOf(id))); }
+  finally{ keep.forEach(([i,o,pr])=>{ i.on=o; i.price=pr; }); }
+}
+function subPayments(){
+  if(ACC.owner) return AC?AC.list.flatMap(p=>(p.log||[]).filter(x=>x.action==='payment').map(x=>({...x,email:p.email}))):[];
+  return TXSUB||[];
+}
+function taxData(Y){
+  const rows=[], E={food:0,pans:0,pack:0,fuel:0,trav:0,fees:0,labor:0,other:0};
+  let inc=0, taxPart=0, undated=0;
+  Object.values(store.jobs).forEach(j=>{
+    const v=j.v||{}; let M; try{ M=jobModel(j); }catch(_){ return; }
+    const paid=(j.pays||[]).filter(p=>yearOf(p.d)===Y).reduce((a,p)=>a+p.amt,0);
+    const share=M.total>0?M.taxAmt/M.total:0;
+    inc+=paid; taxPart+=paid*share;
+    const inYear=yearOf(v.edate)===Y;
+    if(!v.edate && (M.costSum>0||paid)) undated++;
+    const ex=inYear?{food:M.f.total,pans:M.costs.pans,pack:M.costs.pack,fuel:M.costs.fuel,trav:M.costs.trav,fees:M.cardFees,labor:M.labor,other:M.costs.other}:null;
+    if(ex) Object.keys(E).forEach(k=>E[k]+=ex[k]);
+    if(inYear||paid) rows.push({no:j.no||'',cust:v.cname||'',date:v.edate||'',adults:+v.adults||0,kids:+v.kids||0,total:M.total,tax:M.taxAmt,paid,ex});
+  });
+  rows.sort((a,b)=>(a.date||'9').localeCompare(b.date||'9'));
+  const subs=subPayments().filter(x=>yearOf(x.at)===Y);
+  return {rows,inc,taxPart,E,undated,sub:subs.reduce((a,x)=>a+(x.amount||0),0),subs};
+}
+function taxLines(Y){
+  const d=taxData(Y), E=d.E, L=$('txLabor').checked, out=[];
+  out.push(['sg','Income']);
+  out.push(['','Payments received from catering customers','',d.inc,'All payments you recorded on jobs, by payment date.']);
+  out.push(['','Less: sales tax collected','',-d.taxPart,'Owed to the state, so it isn\u2019t income.']);
+  if(ACC.owner) out.push(['','Catering Hub subscription payments received','Line 1 (add to gross receipts)',d.sub,'From the Access tab. Get Stripe\u2019s fees from your Stripe account; they go on line 10.']);
+  const gross=d.inc-d.taxPart+(ACC.owner?d.sub:0);
+  out.push(['tot','Gross receipts','Line 1',gross,'']);
+  out.push(['sg','Expenses (jobs with an event date in '+Y+')']);
+  const ex=[
+    ['Food and ingredients','Part III cost of goods sold (line 38), then line 4',E.food,'Meat, sides, buns and sauce.'],
+    ['Disposable pans','Line 22 supplies',E.pans,''],
+    ['Plates, utensils, napkins','Line 22 supplies',E.pack,''],
+    ['Wood, charcoal, propane','Line 22 supplies',E.fuel,''],
+    ['Delivery and travel','Line 9 car and truck',E.trav,'If you use the standard mileage rate instead, keep a mileage log and use that.'],
+    ['Card processing fees','Line 10 commissions and fees',E.fees,'Estimated from your card fee %. Your processor\u2019s year-end statement has the exact number.'],
+    ['Labor','Line 26 wages (employees) or line 11 contract labor',L?E.labor:0,L?'Only pay to other people. Never include pay to yourself.':`Not counted (${money(E.labor)} entered). Check the box above if you paid workers.`],
+    ['Other job costs','Split by type: rentals line 20b, permits line 23, ice and chafing fuel line 22',E.other,'']
+  ];
+  if(!ACC.owner) ex.push(['Catering Hub subscription','Line 27a other expenses (software subscription)',d.sub,'Your payments for Catering Hub access.']);
+  ex.forEach(x=>out.push(['',x[0],x[1],x[2],x[3]]));
+  const tot=ex.reduce((a,x)=>a+x[2],0);
+  out.push(['tot','Total expenses','',tot,'']);
+  out.push(['sg','Result']);
+  out.push(['tot','Net profit before other expenses','Line 31 (after any other business expenses you have)',gross-tot,'Add other expenses you track elsewhere: insurance, equipment, phone, advertising and so on.']);
+  return {out,d};
+}
+function txYears(){
+  const ys=new Set([String(new Date().getFullYear())]);
+  Object.values(store.jobs).forEach(j=>{ const v=j.v||{}; if(v.edate) ys.add(yearOf(v.edate)); (j.pays||[]).forEach(p=>ys.add(yearOf(p.d))); });
+  subPayments().forEach(x=>ys.add(yearOf(x.at)));
+  return [...ys].filter(Boolean).sort().reverse();
+}
+async function openTaxes(){
+  renderTaxes();
+  try{
+    if(ACC.owner){ if(!AC) await loadAccess(false); }
+    else { const r=await api('GET',undefined,ACCESS_URL); const j=await r.json(); if(r.ok) TXSUB=j.payments||[]; }
+  }catch(_){}
+  renderTaxes();
+}
+function renderTaxes(){
+  const sel=$('txYear'), cur=sel.value, ys=txYears();
+  sel.innerHTML=ys.map(y=>`<option>${y}</option>`).join(''); sel.value=ys.includes(cur)?cur:ys[0];
+  const Y=sel.value, {out,d}=taxLines(Y);
+  $('txBody').innerHTML=out.map(r=> r[0]==='sg' ? `<tr class="sg"><td colspan="3">${esc(r[1])}</td></tr>`
+    : `<tr class="${r[0]}"><td>${esc(r[1])}${r[4]?`<span class="sub">${esc(r[4])}</span>`:''}</td><td class="ln">${esc(r[2])}</td><td class="num">${money(r[3])}</td></tr>`).join('');
+  const W=[];
+  if(d.undated) W.push(`${d.undated} job${d.undated>1?'s have':' has'} no event date, so ${d.undated>1?'their':'its'} costs aren\u2019t counted. Add the date on the Event tab.`);
+  if(!d.rows.length) W.push(`No jobs or payments in ${Y} yet.`);
+  $('txWarn').innerHTML=W.map(w=>`<p class="info">${esc(w)}</p>`).join('');
+  $('txIncomeBtn').hidden=!ACC.owner;
+}
+function taxDownload(kind){
+  const Y=$('txYear').value, L=$('txLabor').checked, biz=($('biz').value||defOf('biz')||'Catering Hub').trim(), msg=$('msgTX');
+  if(kind==='summary'){
+    const {out}=taxLines(Y);
+    const rows=[[`${biz} - tax summary ${Y}`],[`Prepared ${fmtDate(today())} from Catering Hub. Not tax advice; confirm with a tax professional.`],[],['Section','Item','Usually goes on (Schedule C)','Amount','Notes']];
+    let sec=''; out.forEach(r=>{ if(r[0]==='sg'){ sec=r[1]; return; } rows.push([sec,r[1],r[2],r[3],r[4]]); });
+    saveFile(`tax-summary-${Y}.csv`,toCSV(rows),'text/csv',msg,`Downloaded the ${Y} tax summary.`);
+  }
+  if(kind==='jobs'){
+    const {d}=taxLines(Y);
+    const rows=[[`${biz} - jobs ${Y}`],[`Expenses count jobs with an event date in ${Y}; payments count by payment date. Labor ${L?'is':'is not'} counted.`],[],
+      ['Job #','Customer','Event date','Adults','Kids','Customer total','Sales tax on job',`Payments received in ${Y}`,'Food and ingredients','Disposable pans','Plates, utensils, napkins','Wood, charcoal, propane','Delivery and travel','Card fees','Labor','Other costs','Total expenses']];
+    const T={}; d.rows.forEach(r=>{ const x=r.ex||{}; const lab=L?(x.labor||0):0;
+      const tot=r.ex?x.food+x.pans+x.pack+x.fuel+x.trav+x.fees+lab+x.other:0;
+      const line=[r.no,r.cust,r.date||'(no date)',r.adults,r.kids,r.total,r.tax,r.paid,x.food||0,x.pans||0,x.pack||0,x.fuel||0,x.trav||0,x.fees||0,lab,x.other||0,tot];
+      line.slice(5).forEach((v,k)=>T[k]=(T[k]||0)+v); rows.push(line); });
+    rows.push(['Totals','','','','',...Object.keys(T).map(k=>T[k])]);
+    saveFile(`tax-jobs-${Y}.csv`,toCSV(rows),'text/csv',msg,`Downloaded ${d.rows.length} job${d.rows.length!==1?'s':''} for ${Y}.`);
+  }
+  if(kind==='income') subIncomeCSV(Y,msg);
+}
+function subIncomeCSV(Y,msg){
+  if(!AC){ msg.textContent='Open the Access tab once to load payments, then try again.'; return; }
+  const ps=AC.list.flatMap(p=>(p.log||[]).filter(x=>x.action==='payment'&&(!Y||yearOf(x.at)===Y)).map(x=>({...x,email:p.email}))).sort((a,b)=>a.at.localeCompare(b.at));
+  const rows=[[`Catering Hub subscription payments${Y?' '+Y:' (all)'}`],[],['Date','Customer email','Amount','Currency','Paid by','Days added','Access through','Note','Reference']];
+  ps.forEach(x=>rows.push([x.at.slice(0,10),x.email,x.amount||0,x.currency||'USD',x.method||'',x.days||'',x.through||'',x.note||'',x.ref||'']));
+  rows.push(['Total','',ps.reduce((a,x)=>a+(x.amount||0),0)]);
+  saveFile(`subscription-payments${Y?'-'+Y:''}.csv`,toCSV(rows),'text/csv',msg,`Downloaded ${ps.length} payment${ps.length!==1?'s':''}.`);
+}
+
+async function acPost(body,msgEl){
+  const r=await api('POST',JSON.stringify(body),ACCESS_URL); const j=await r.json();
+  if(!r.ok) throw new Error(j.error||'Couldn\u2019t save that. Try again.');
+  AC=j; renderAccess(false); return j;
+}
+async function accessAction(b){
+  const a=b.dataset.ac, email=b.dataset.email, msg=$('msgAC');
+  try{
+    if(a==='extendForm'){
+      const em=$('acEmail').value.trim(), days=parseInt($('acDays').value,10);
+      if(!em){ msg.textContent='Enter the customer\u2019s email.'; $('acEmail').focus(); return; }
+      b.disabled=true; await acPost({action:'extend',email:em,days,amount:$('acAmt').value,method:$('acMeth').value,note:$('acNote').value.trim()});
+      const p=AC.list.find(x=>x.email===em.toLowerCase());
+      msg.textContent=`Recorded ${days} days for ${em}. Access runs through ${fmtDate(p.paidThrough)}.`;
+      $('acEmail').value=''; $('acNote').value=''; $('acAmt').value=AC.config.price||''; return;
+    }
+    if(a==='extend'){ const days=AC.config.defaultDays||30; b.disabled=true; await acPost({action:'extend',email,days,method:'Recorded by hand'});
+      const p=AC.list.find(x=>x.email===email); msg.textContent=`Added ${days} days for ${email}. Access runs through ${fmtDate(p.paidThrough)}.`; return; }
+    if(a==='setdate'){ const inp=document.querySelector(`[data-acdate="${CSS.escape(email)}"]`); if(!inp.value){ msg.textContent='Pick a date first.'; return; }
+      await acPost({action:'setdate',email,date:inp.value}); msg.textContent=`${email} now has access through ${fmtDate(inp.value)}.`; return; }
+    if(a==='lock'){ if(!armed('lock-'+email,b,'Click again to lock')) return; await acPost({action:'lock',email}); msg.textContent=`${email} is locked out. Record a payment to let them back in.`; return; }
+    if(a==='remove'){ if(!armed('rm-'+email,b,'Click again to remove')) return; await acPost({action:'remove',email}); msg.textContent=`Removed ${email} from the access list. To remove their login too, delete them in Netlify Identity.`; return; }
+    if(a==='config'){ const days=parseInt($('acDefDays').value,10);
+      await acPost({action:'config',contact:$('acContact').value.trim(),defaultDays:days,price:$('acPrice').value,trialDays:$('acTrial').value,payLink:$('acPayLink').value.trim(),portalLink:$('acPortal').value.trim()}); renderAccess(true); $('msgACC').textContent='Saved.'; return; }
+    if(a==='history'){ subIncomeCSV(null,msg); return; }
+  }catch(e){ (a==='config'?$('msgACC'):msg).textContent = e.message==='signin'?'Your sign-in expired. Sign in again.':e.message; }
+  finally{ b.disabled=false; }
+}
+
+/* ---------- saving to the account ---------- */
+let rev=0, saveTimer=null, retryTimer=null, saving=false, pending=false, syncState='ok', appStarted=false;
+function setSync(st,msg){
+  syncState=st;
+  const t={ok:`Saved to your account${auth&&auth.email?' ('+auth.email+')':''}. Sign in on any device to see your jobs.`,
+    saving:'Saving\u2026', offline:'Not saved yet: no connection. Keep this page open; it will retry by itself.',
+    signin:'Your sign-in expired. Sign in again to save your changes.'}[st];
+  $('saveMsg').textContent=msg||t; $('saveMsg').classList.toggle('warnmsg',st==='offline'||st==='signin');
+}
+function persist(){
+  if(!appStarted) return;
+  pending=true; setSync('saving'); clearTimeout(saveTimer); saveTimer=setTimeout(pushNow,700);
+}
+function mergeIn(remote){   // keep jobs and prices that another device changed more recently
+  if(!remote) return false; let openChanged=false;
+  Object.entries(remote.jobs||{}).forEach(([id,j])=>{ const l=store.jobs[id];
+    if(!l || (j.saved||0)>(l.saved||0)){ store.jobs[id]=j; if(id===store.cur) openChanged=true; } });
+  Object.entries(remote.prices||{}).forEach(([id,p])=>{ const l=store.prices[id]; if(!l || (p.date||'')>(l.date||'')) store.prices[id]=p; });
+  return openChanged;
+}
+async function pushNow(){
+  if(saving||!pending) return;
+  saving=true; pending=false; clearTimeout(retryTimer);
+  try{
+    const r=await api('PUT',JSON.stringify({baseRev:rev,data:store}));
+    if(r.status===409){
+      const cur=await r.json(); rev=cur.rev||0;
+      if(mergeIn(cur.data)) refreshAll(); else { jobList(); buildStore(); }
+      pending=true;
+    } else if(!r.ok){ throw new Error('network'); }
+    else { const j=await r.json(); rev=j.rev; if(j.access) updateAccess(j.access); }
+    if(!pending) setSync('ok');
+  }catch(e){
+    pending=true;
+    if(e.message==='signin'){ setSync('signin'); showGate('login','Your sign-in expired. Sign in again; your unsaved changes are kept on this page.'); }
+    else if(e.message==='locked'){ showLocked(e.info); }
+    else { setSync('offline'); retryTimer=setTimeout(pushNow,8000); }
+  }finally{
+    saving=false;
+    if(pending && syncState!=='offline' && syncState!=='signin') setTimeout(pushNow,50);
+  }
+}
+async function pullLatest(){   // pick up changes made on another device
+  if(!appStarted||pending||saving) return;
+  try{
+    const r=await api('GET'); if(!r.ok) return;
+    const j=await r.json(); if(j.access) updateAccess(j.access);
+    if(!j.data || (j.rev||0)<=rev || pending || saving) return;
+    const keepCur=store.cur; rev=j.rev; useData(j.data);
+    if(keepCur && store.jobs[keepCur]) store.cur=keepCur;
+    refreshAll(); setSync('ok');
+  }catch(e){ if(e.message==='locked') showLocked(e.info); }
+}
+setInterval(()=>{ if(!document.hidden){ pullLatest(); if(ACC.owner) loadAccess(!$('tab-access').hidden); } }, ACC.owner?5*60*1000:20*60*1000);   // notices an ended subscription on a page left open
+function refreshAll(){
+  rebuildCatalog(); applySettingsUI();
+  if(store.cur && store.jobs[store.cur]){ dirty=false; applyJob(store.jobs[store.cur]); }
+  build(); buildStore(); buildSetup(); jobList(); calc();
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ pullLatest(); if(ACC.owner) loadAccess(!$('tab-access').hidden); } });
+window.addEventListener('online',()=>{ if(pending) pushNow(); });
+window.addEventListener('beforeunload',e=>{ if(pending||saving){ e.preventDefault(); e.returnValue=''; } });
+const densOf = i => i.dens;
+function storePrice(id){ const p=store.prices[id]; if(p && isFinite(p.price)) return p.price; const d=store.items.find(i=>i.id===id); return d?d.price:0; }
+function setStorePrice(id, price, storeName){
+  const old=store.prices[id]||{};
+  store.prices[id]={price:r2(price), date:today(), store: storeName!==undefined ? storeName : (old.store||'')};
+  persist();
+}
+
+const fields = () => [...document.querySelectorAll('main input[id], main select[id], main textarea[id]')].filter(e=>!e.classList.contains('nosave'));
+const DEFAULTS={}; fields().forEach(e=>DEFAULTS[e.id]=e.value);
+const defOf = id => { const d=T().defaults; return d && d[id]!==undefined ? d[id] : DEFAULTS[id]; };
+
+/* ---------- dropdowns built from settings ---------- */
+function optsFor(kind){
+  const s=T();
+  if(kind==='appetite') return s.appetite.map(a=>({v:String(+a.v),t:a.label}));
+  if(kind==='style') return s.styles.map(a=>({v:String(+a.oz),t:`${a.label} (${fmtN(a.oz)} oz)`}));
+  if(kind==='pan') return [...s.pans.map(p=>({v:`${+p.cap}|${+p.price}|${p.name}`,t:`${p.label} (holds ${fmtN(p.cap)} fl oz)`})),{v:'custom',t:'Custom size'}];
+  if(kind==='method') return s.methods.map(m=>({v:m,t:m}));
+  return [];
+}
+function normV(kind,v){
+  v=String(v);
+  if(kind==='pan' && v.includes('|')){ const a=v.split('|'); return `${+a[0]}|${+a[1]}|${a.slice(2).join('|')}`; }
+  if((kind==='appetite'||kind==='style') && v!=='' && isFinite(+v)) return String(+v);
+  return v;
+}
+function savedLabel(kind,v){
+  if(kind==='pan'){ const a=String(v).split('|'); return `Earlier pan: ${a[2]||'pan'} (${a[0]} fl oz)`; }
+  if(kind==='appetite') return `Earlier setting (×${v})`;
+  if(kind==='style') return `Earlier setting (${v} oz)`;
+  return String(v);
+}
+function setSel(sel,want){
+  const k=sel.dataset.opts;
+  if(!k){ sel.value=want; return; }
+  if(want===undefined||want===null||want===''){ if(sel.selectedIndex<0) sel.selectedIndex=0; return; }
+  const n=normV(k,want), o=[...sel.options].find(o=>normV(k,o.value)===n);
+  if(o){ sel.value=o.value; return; }
+  const x=document.createElement('option'); x.value=want; x.textContent=savedLabel(k,want); sel.appendChild(x); sel.value=want;
+}
+function fillSel(sel){
+  const cur=sel.value;
+  sel.innerHTML=optsFor(sel.dataset.opts).map(o=>`<option value="${esc(o.v)}">${esc(o.t)}</option>`).join('');
+  setSel(sel,cur);
+}
+function applySettingsUI(){
+  document.querySelectorAll('select[data-opts]').forEach(fillSel);
+  const s=T();
+  $('kidsLbl').textContent=`${s.kidsLabel} (eat about ${fmtN(s.kidFactor)}%)`;
+  $('tPPL').textContent=`Food cost per guest (kids count as ${fmtN(s.kidFactor)}%)`;
+  $('fcAim').textContent=`${fmtN(s.fcLow)}–${fmtN(s.fcHigh)}%`;
+  document.querySelectorAll('.staleN').forEach(e=>e.textContent=fmtN(s.staleDays));
+  $('mathTop').textContent=
+`people (food)  = adults + ${fmtN(s.kidFactor/100)} × kids
+meat_oz        = serving style × appetite
+meat_share     = 1 if one meat, else ${fmtN(s.meatShare)} ÷ number of meats
+sides_scale    = clamp(${fmtN(s.sideBase)} ÷ number of sides, ${fmtN(s.sideMin)}, ${fmtN(s.sideMax)})
+
+meat cooked lb = people × meat_oz × share × (1 + buffer) ÷ 16
+meat buy lb    = cooked ÷ yield, rounded up to ${fmtN(s.roundLb)} lb     cost = buy lb × $/raw lb
+side cooked lb = people × appetite × side_oz × sides_scale × (1 + buffer) ÷ 16
+                                                        cost = cooked lb × $/cooked lb
+side buy lb    = cooked lb × raw lb per cooked lb, rounded up to ${fmtN(s.roundLb)} lb
+lb per pan     = lb per quart × (pan fl oz ÷ 32) × fill%
+pans           = cooked lb ÷ lb per pan, rounded up      pan cost = pans × $/pan
+counted extras = people × per adult × (1 + buffer), bought in whole packs
+sauces         = people × oz per adult × (1 + buffer), bought in whole bottles`;
+}
+const newNo = () => today().replace(/-/g,'') + '-' + String(Math.floor(Math.random()*900)+100);
+
+function snapshot(){
+  const v={}; fields().forEach(e=>v[e.id]=e.value);
+  return {v, items:PRICED.map(i=>({id:i.id,on:i.on,price:i.price})), pays:payments, no:jobNo, saved:Date.now()};
+}
+function applyJob(job){
+  fields().forEach(e=>{ const v = (job.v && job.v[e.id]!==undefined) ? job.v[e.id] : defOf(e.id);
+    if(e.tagName==='SELECT') setSel(e,v); else e.value=v; });
+  PRICED.forEach(i=>{
+    const s = job.items && job.items.find(x=>x.id===i.id);
+    i.on = s ? s.on : (job.items ? false : !!i.def);   // items added after a job was saved start off in that job
+    i.price = s && isFinite(s.price) ? s.price : storePrice(i.id);
+  });
+  payments = (job.pays||[]).slice();
+  jobNo = job.no || newNo();
+  build();
+}
+function saveJob(){
+  if(!dirty) return;
+  if(!store.cur) store.cur = Date.now().toString(36);
+  store.jobs[store.cur] = snapshot();
+  persist(); jobList();
+}
+function jobList(){
+  const ids=Object.keys(store.jobs).sort((a,b)=>(store.jobs[b].saved||0)-(store.jobs[a].saved||0));
+  let h = (!store.cur || !store.jobs[store.cur]) ? '<option value="">New job (not saved yet)</option>' : '';
+  ids.forEach(id=>{ const j=store.jobs[id].v||{};
+    h+=`<option value="${id}"${id===store.cur?' selected':''}>${esc(j.cname||'Unnamed customer')} — ${esc(j.edate?fmtDate(j.edate):'no date')} (#${esc(store.jobs[id].no||'')})</option>`; });
+  $('jobSel').innerHTML=h;
+}
+function startNew(copyFrom){
+  store.cur=null; dirty=false;
+  if(copyFrom){ const s=snapshot(); s.pays=[]; s.no=newNo(); applyJob(s); dirty=true; }
+  else applyJob({});
+  persist(); jobList(); calc();
+}
+
+/* ---------- table ---------- */
+function build(){
+  let h='';
+  ITEMS.forEach(i=>{
+    if(i.g){ h+=`<tr class="grp"><td colspan="6">${i.g}</td></tr>`; return; }
+    h+=`<tr id="r-${i.id}"><td><input type="checkbox" data-on="${i.id}" ${i.on?'checked':''} aria-label="Include ${esc(i.n)}"></td>
+    <td>${esc(i.n)}${i.note?`<span class="sub">${esc(i.note)}</span>`:''}</td>
+    <td class="num" id="c-${i.id}"></td><td class="num" id="b-${i.id}"></td>
+    <td class="num"><input type="number" min="0" step="0.01" value="${i.price}" data-price="${i.id}" aria-label="Price for ${esc(i.n)}"><span class="sub">${esc(UNIT(i))}</span><span class="sub chg" id="s-${i.id}"></span></td>
+    <td class="num" id="d-${i.id}"></td></tr>`;
+  });
+  $('rows').innerHTML=h;
+}
+function buildStore(){
+  let h='';
+  ITEMS.forEach(i=>{
+    if(i.g){ h+=`<tr class="grp"><td colspan="5">${i.g}</td></tr>`; return; }
+    const p=store.prices[i.id]||{}, age=daysAgo(p.date);
+    h+=`<tr><td>${esc(i.n)}</td>
+      <td class="num"><input type="number" min="0" step="0.01" value="${storePrice(i.id)}" data-sp="${i.id}" aria-label="Store price for ${esc(i.n)}"></td>
+      <td>${esc(UNIT(i))}</td>
+      <td><input type="text" value="${esc(p.store||'')}" data-ss="${i.id}" placeholder="Store" aria-label="Store for ${esc(i.n)}"></td>
+      <td id="sd-${i.id}">${p.date?fmtDate(p.date)+(age>T().staleDays?` <span class="sub chg">${age} days old, check it</span>`:''):'<span class="sub">starting price</span>'}</td></tr>`;
+  });
+  $('storeTbl').innerHTML=h;
+  const keep=(id,list)=>{ const v=$(id).value; $(id).innerHTML=list.map(i=>`<option value="${i.id}">${esc(i.n)}</option>`).join(''); if(list.some(i=>i.id===v)) $(id).value=v; };
+  keep('rsSide', ITEMS.filter(i=>i.kind==='side'));
+  keep('ppMeat', ITEMS.filter(i=>i.kind==='meat'));
+}
+
+/* ---------- model ---------- */
+function readState(g){
+  g=g||(id=>$(id).value); const num=id=>Math.max(0,parseFloat(g(id))||0);
+  return {adults:num('adults'), kids:num('kids'), app:parseFloat(g('appetite'))||1, style:parseFloat(g('style'))||6,
+    buf:num('buffer'), price:num('price'), kp:clamp(num('kp'),0,100), dlv:num('dlv'), svc:num('svc'), tax:num('tax'),
+    dep:clamp(num('dep'),0,100), hrs:num('hrs'), rate:num('rate'), fuel:num('fuel'), trav:num('trav'), pack:num('pack'),
+    other:num('other'), fee:num('fee'), tm:clamp(num('tm'),0,80), fc:clamp(num('fc'),10,90), ...panInfo(g)};
+}
+function panInfo(g){
+  g=g||(id=>$(id).value); const num=id=>Math.max(0,parseFloat(g(id))||0);
+  const v=String(g('panType')||'');
+  if(v==='custom') return {panCap:num('panCap'), panName:'pan', panPrice:num('panPrice'), panFill:clamp(num('panFill'),30,100)};
+  const a=v.split('|'); return {panCap:+a[0], panName:a[2], panPrice:num('panPrice'), panFill:clamp(num('panFill'),30,100)};
+}
+const lpp = (i,s) => densOf(i)*(s.panCap/32)*s.panFill/100;   // cooked lb that fit in one pan
+const plural = (n,w) => `${n} ${w}${n!==1?'s':''}`;
+function food(s, ov={}){
+  const st=T(), people=s.adults+st.kidFactor/100*s.kids, buf=1+(ov.buf!==undefined?ov.buf:s.buf)/100, pm=ov.priceMult||1, yAdd=ov.yAdd||0;
+  const meats=ITEMS.filter(i=>i.kind==='meat'&&i.on), sides=ITEMS.filter(i=>i.kind==='side'&&i.on);
+  const share=meats.length<=1?1:st.meatShare/meats.length, ss=clamp(st.sideBase/Math.max(sides.length,1),st.sideMin,st.sideMax);
+  const rows={}; let total=0, meatCost=0, pansTotal=0;
+  PRICED.forEach(i=>{
+    if(!i.on){ rows[i.id]=null; return; }
+    let r;
+    if(i.kind==='meat'){
+      const c=people*s.app*s.style*share*buf/16, b=up(c/Math.min(1,i.y+yAdd)), k=Math.ceil(b/i.pack);
+      r={cooked:lb(c), buy:lbB(b), sub:b&&i.packName?`≈ ${k} ${i.packName}${k>1?'s':''} (~${fmtN(i.pack)} lb each)`:'', cost:b*i.price*pm, menu:lb(c)+' cooked'};
+      meatCost+=r.cost;
+    } else if(i.kind==='side'){
+      const c=people*s.app*i.oz*ss*buf/16, b=up(c*i.raw), L=lpp(i,s);
+      const pans=L>0&&c>0?Math.ceil(c/L-1e-9):0, scoop=i.oz*ss*s.app, per=scoop>0?Math.floor(L*16/scoop+1e-9):0;
+      r={c, cooked:lb(c), cookedSub:pans?`${plural(pans,s.panName)} · ~${per} scoops of ${scoop.toFixed(1)} oz each`:'', buy:lbB(b), sub:i.rawNote||'',
+         cost:c*i.price*pm, costSub:pans?`${money(i.price*pm*L)} per full pan`:'', menu:pans?`${plural(pans,s.panName)} (${lb(c)})`:lb(c), pans};
+      pansTotal+=pans;
+    } else if(i.kind==='count'){
+      const q=Math.ceil(people*i.per*buf-1e-9), k=Math.ceil(q/i.pack);
+      const each=i.each||'pieces';
+      r={cooked:q+' ea', buy:`${k} ${i.packName||'pack'}${k!==1?'s':''}`, sub:`${fmtN(k*i.pack)} ${each}`, cost:k*i.price*pm, menu:`${q} ${each}`};
+    } else {
+      const c=people*i.oz*buf/16, k=Math.ceil(c*16/i.bottle-1e-9);
+      r={cooked:lb(c), buy:`${k} bottle${k!==1?'s':''}`, sub:`${fmtN(i.bottle)} oz each`, cost:k*i.price*pm, menu:lb(c)};
+    }
+    total+=r.cost; rows[i.id]=r;
+  });
+  return {rows,total,meatCost,people,meats:meats.length,sides:sides.length,ss,pans:pansTotal};
+}
+function model(s, ov={}){
+  const f=food(s,ov);
+  const price=ov.price!==undefined?ov.price:s.price, heads=s.adults+s.kids;
+  const U=s.adults+s.kids*s.kp/100, kidP=price*s.kp/100;
+  const foodSales=price*U, svcAmt=foodSales*s.svc/100, rev=foodSales+svcAmt+s.dlv;
+  const taxAmt=rev*s.tax/100, total=rev+taxAmt;
+  const labor=(ov.hrs!==undefined?ov.hrs:s.hrs)*s.rate;
+  const cardFees=total*s.fee/100;
+  const costs={food:f.total, pans:f.pans*s.panPrice, labor, fuel:s.fuel, trav:s.trav, pack:s.pack*heads, other:s.other};
+  const costSum=Object.values(costs).reduce((a,b)=>a+b,0);
+  const profit=rev-cardFees-costSum;
+  const priceFor=m=>{ const den=1-s.fee/100*(1+s.tax/100)-m; if(den<=0||U<=0) return null;
+    const F=(costSum/den - s.dlv)/(1+s.svc/100); return Math.max(0,F/U); };
+  return {f,price,kidP,heads,U,foodSales,svcAmt,rev,taxAmt,total,labor,cardFees,costs,costSum,profit,
+    margin:rev?profit/rev:0, be:priceFor(0), tar:priceFor(s.tm/100), dep:total*s.dep/100};
+}
+
+/* ---------- render ---------- */
+let M, S;
+function calc(){
+  S=readState(); M=model(S); const f=M.f;
+  PRICED.forEach(i=>{
+    const r=f.rows[i.id];
+    $('r-'+i.id).classList.toggle('off', !i.on);
+    $('c-'+i.id).innerHTML = r ? esc(r.cooked) + (r.cookedSub?`<span class="sub">${esc(r.cookedSub)}</span>`:'') : '—';
+    $('b-'+i.id).innerHTML = r ? r.buy + (r.sub?`<span class="sub">${esc(r.sub)}</span>`:'') : '—';
+    $('d-'+i.id).innerHTML = r ? money(r.cost) + (r.costSub?`<span class="sub">${esc(r.costSub)}</span>`:'') : '—';
+    const sp=storePrice(i.id);
+    $('s-'+i.id).textContent = Math.abs(sp-i.price)>0.004 ? `store list: ${money(sp)}` : '';
+  });
+  const stale=PRICED.filter(i=>Math.abs(storePrice(i.id)-i.price)>0.004).length;
+  $('staleNote').textContent = stale ? `${stale} price${stale>1?'s':''} in this job differ${stale>1?'':'s'} from your store list.` : '';
+  $('bUseStore').style.display = stale ? '' : 'none';
+
+  $('tCost').textContent=money(f.total);
+  $('tPP').textContent=money(f.people?f.total/f.people:0);
+  $('tFCP').textContent=M.foodSales?(f.total/M.foodSales*100).toFixed(0)+'%':'—';
+  $('tSell').textContent=M.U?money(f.total/(S.fc/100)/M.U):'—';
+  $('people').textContent=`${fmtN(f.people)} adult-size portions (${S.adults} adults + ${S.kids} kids at ${fmtN(T().kidFactor)}%). `+
+    (f.meats>1?`${f.meats} meats, so each is a smaller share (about ${(S.style*S.app*T().meatShare/f.meats).toFixed(1)} oz cooked of each per adult). `:'')+
+    (f.sides?`Side scoops scaled ×${f.ss.toFixed(2)} for ${f.sides} side${f.sides>1?'s':''}.`:'');
+
+  // business
+  const neg=(el,v)=>$(el).classList.toggle('neg',v<0);
+  $('bRev').textContent=money0(M.rev);
+  $('bCost').textContent=money0(M.costSum+M.cardFees);
+  $('bProf').textContent=money0(M.profit); neg('bProf',M.profit);
+  $('bMar').textContent=(M.margin*100).toFixed(1)+'%'; neg('bMar',M.profit);
+  $('bBE').textContent=M.be!==null?money(M.be):'—';
+  $('bTar').textContent=M.tar!==null?money(M.tar):'—';
+  $('bTarL').textContent=`Price per adult for a ${S.tm}% margin`;
+  const base=M.profit, L=[], add=(t,ov)=>L.push([t,model(S,ov).profit-base]);
+  add('Raise your price by $1 per adult',{price:S.price+1});
+  add('Improve meat yield by 5 points (tighter trim, steady pit, wrap earlier)',{yAdd:.05});
+  if(S.buf>5) add('Cut the extra-food buffer to 5%',{buf:5});
+  add('Get 5% off all ingredients',{priceMult:.95});
+  add('Cut labor hours by 10%',{hrs:S.hrs*.9});
+  L.sort((a,c)=>c[1]-a[1]);
+  $('levers').innerHTML=L.map(x=>`<tr><td>${x[0]}</td><td class="num">+${money0(x[1])}</td></tr>`).join('');
+
+  // glance
+  const paid=payments.reduce((a,p)=>a+p.amt,0), bal=r2(M.total-paid);
+  $('gTotal').textContent=money(M.total);
+  if(paid>0){ $('gDep').textContent=money(bal); $('gDepL').textContent=bal>0?`Balance still owed (${money(paid)} paid)`:'Balance owed (paid in full)'; }
+  else { $('gDep').textContent=money(M.dep); $('gDepL').textContent=`Deposit to book (${S.dep}%)`; }
+  $('gBuy').textContent=money(f.total+M.costs.pans);
+  $('gProf').textContent=money0(M.profit); neg('gProf',M.profit);
+  $('gProfL').textContent=`Your profit (${(M.margin*100).toFixed(1)}% margin)`;
+  $('gHour').textContent=S.hrs?money((M.profit+M.labor)/S.hrs):'—';
+  $('gTar').textContent=M.tar!==null?money(M.tar):'—';
+  $('gTarL').textContent=`Price per adult for a ${S.tm}% margin (you charge ${money(S.price)})`;
+  const W=[];
+  if(!f.meats) W.push(['','No meat is selected.']);
+  if(M.profit<0) W.push(['',`This job loses ${money0(-M.profit)}. Break-even is ${M.be!==null?money(M.be):'not reachable'} per adult.`]);
+  else if(M.tar!==null && S.price+0.005<M.tar) W.push(['info',`You're below your ${S.tm}% target. Charge ${money(M.tar)} per adult to hit it (${money(M.tar-S.price)} more).`]);
+  else if(M.rev) W.push(['good',`You're at or above your ${S.tm}% target margin.`]);
+  if(M.foodSales && f.total/M.foodSales>T().fcWarn/100) W.push(['info',`Food is ${(f.total/M.foodSales*100).toFixed(0)}% of your food price. Above ${fmtN(T().fcWarn)}% leaves little room for labor and overhead.`]);
+  if(!S.tax) W.push(['info','Sales tax is set to 0%. Many states tax catering. Confirm your rate before you send the estimate.']);
+  const old=PRICED.filter(i=>i.on && store.prices[i.id] && daysAgo(store.prices[i.id].date)>T().staleDays).length;
+  const never=PRICED.filter(i=>i.on && !store.prices[i.id]).length;
+  if(never) W.push(['info',`${never} selected item${never>1?'s are':' is'} still on the starting prices. Update them on the My prices tab.`]);
+  else if(old) W.push(['info',`${old} store price${old>1?'s are':' is'} over ${fmtN(T().staleDays)} days old. Check the My prices tab.`]);
+  if(paid-M.total>0.005) W.push(['',`Payments exceed the job total by ${money(paid-M.total)}. A refund or a price change may be needed.`]);
+  $('warns').innerHTML=W.map(w=>`<p class="${w[0]}">${esc(w[1])}</p>`).join('');
+
+  // price per pound
+  const pd=num('paid'), wt=num('wt'), y=clamp(num('yield'),1,100)/100, oz=num('oz');
+  const raw=wt?pd/wt:0, cooked=raw/y;
+  $('p1').textContent=money(raw); $('p2').textContent=money(cooked); $('p3').textContent=money(cooked/16*oz);
+  $('p4').textContent=oz?Math.floor(wt*y*16/oz+1e-9):0;
+
+  $('panCapW').style.display = $('panType').value==='custom' ? '' : 'none';
+  renderSummary(); rsCalc(); quoteDocs(); payTable();
+}
+function renderSummary(){
+  const f=M.f, paid=r2(payments.reduce((a,p)=>a+p.amt,0)), bal=r2(M.total-paid), allc=M.costSum+M.cardFees;
+  const tr=(a,b,cls='',ind=false)=>`<tr class="${cls}"><td${ind?' class="ind"':''}>${a}</td><td class="num">${b}</td></tr>`;
+  // customer charges
+  let h=chargeRows().map(r=>tr(esc(r[0]),money(r[1]))).join('');
+  if(S.tax) h+=tr('Subtotal',money(M.rev))+tr(`Sales tax (${S.tax}%)`,money(M.taxAmt));
+  h+=tr('Customer total',money(M.total),'tot');
+  h+=tr(`Deposit to book (${S.dep}%)`,money(M.dep));
+  h+=tr(`Paid so far${payments.length?` (${payments.length} payment${payments.length>1?'s':''})`:''}`,money(paid));
+  h+=tr(bal>=0?'Still owed':'Refund due to customer',money(Math.abs(bal)),'tot');
+  $('sumCharges').innerHTML=h;
+  // full cost
+  let c=tr(`Food (${fmtN(f.people)} adult-size portions)`, '', 'sg');
+  PRICED.forEach(i=>{ const r=f.rows[i.id]; if(r) c+=tr(`${esc(i.n)} <span class="sub">buy ${esc(r.buy)}${r.pans?` · ${esc(plural(r.pans,S.panName))}`:''}</span>`,money(r.cost),'',true); });
+  c+=tr('Food subtotal',money(f.total),'tot');
+  c+=tr('Other job costs','','sg');
+  [[`Disposable pans for sides (${f.pans} × ${money(S.panPrice)})`,M.costs.pans],[`Labor (${S.hrs} hrs × ${money(S.rate)})`,M.labor],['Wood, charcoal, propane',S.fuel],
+   ['Your delivery and travel',S.trav],[`Plates, utensils, napkins (${M.heads} guests × ${money(S.pack)})`,M.costs.pack],['Other costs',S.other],[`Card fees (${S.fee}% of ${money(M.total)})`,M.cardFees]]
+   .forEach(x=>{ if(x[1]) c+=tr(esc(x[0]),money(x[1]),'',true); });
+  c+=tr('Total cost of the job',money(allc),'tot');
+  c+=tr('Your revenue (customer total minus sales tax)',money(M.rev));
+  c+=tr(`Profit (${(M.margin*100).toFixed(1)}% margin)`,money(M.profit),'tot profit');
+  if(S.hrs) c+=tr('Your pay per hour if you work the job (profit + wages ÷ hours)',money((M.profit+M.labor)/S.hrs));
+  if(M.taxAmt) c+=`<tr><td colspan="2"><span class="sub">Sales tax of ${money(M.taxAmt)} is collected for the state. It is not your revenue or your cost.</span></td></tr>`;
+  $('sumCosts').innerHTML=c;
+  // sticky strip
+  $('stTotal').textContent=money(M.total); $('stCost').textContent=money0(allc);
+  $('stProf').textContent=`${money0(M.profit)} (${(M.margin*100).toFixed(0)}%)`;
+  $('stBal').textContent=money(Math.max(0,bal)); $('stBalW').style.display=payments.length?'':'none';
+}
+
+/* ---------- tabs ---------- */
+const TABS=['event','menu','pricing','payments','summary','prices','taxes','setup','access'];
+function showTab(n, scroll){
+  if(!TABS.includes(n) || (n==='access' && !ACC.owner)) n='event';
+  if(n==='access') loadAccess(true);
+  if(n==='taxes') openTaxes();
+  TABS.forEach(t=>{ $('tab-'+t).hidden=t!==n; const b=document.querySelector(`[data-tab="${t}"]`); b.setAttribute('aria-selected',t===n?'true':'false'); b.tabIndex=t===n?0:-1; });
+  try{ if(location.hash.slice(1)!==n) history.replaceState(null,'','#'+n); }catch(_){}
+  if(scroll){ try{ window.scrollTo({top:0}); }catch(_){} }
+}
+window.addEventListener('hashchange',()=>{ if(/(invite|recovery|confirmation)_token=/.test(location.hash)){ location.reload(); return; } showTab(location.hash.slice(1)); });
+let RS=null;
+function rsCalc(){
+  RS=null; const i=PRICED.find(x=>x.id===$('rsSide').value); if(!i||!S) return;
+  const cost=num('rsCost'), y=num('rsYield'), u=$('rsUnit').value, L=lpp(i,S);
+  const lbs = u==='pan' ? y*L : u==='qt' ? y*densOf(i) : y;
+  const scoop=i.oz*M.f.ss*S.app;
+  $('rs2L').textContent=`Per ${S.panName} (filled to ${S.panFill}%)`;
+  $('rs3L').textContent=`Per ${scoop.toFixed(1)} oz scoop (this job's size)`;
+  if(!(cost>0&&lbs>0)){ ['rs1','rs2','rs3','rs4'].forEach(k=>$(k).textContent='—'); return; }
+  const per=cost/lbs, r=M.f.rows[i.id];
+  $('rs1').textContent=money(per); $('rs2').textContent=money(per*L); $('rs3').textContent=money(per*scoop/16);
+  $('rs4').textContent = r ? money(per*r.c) : 'not on menu';
+  RS={id:i.id,per,n:i.n};
+}
+
+/* ---------- estimate + receipt ---------- */
+function info(){
+  const v=id=>$(id).value.trim();
+  const date=$('edate').value?new Date($('edate').value+'T12:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'Date to be confirmed';
+  let time=''; if($('etime').value){ const [h,m]=$('etime').value.split(':').map(Number); time=`${(h%12)||12}:${String(m).padStart(2,'0')} ${h<12?'AM':'PM'}`; }
+  return {biz:v('biz')||'Catering', bizc:v('bizc'), cn:v('cname'), cc:v('ccontact'), venue:v('venue'), date, time, notes:v('qnotes')};
+}
+function chargeRows(){
+  const r=[];
+  if(S.adults) r.push([`Adults and teens (${S.adults} × ${money(M.price)})`, S.adults*M.price]);
+  if(S.kids) r.push([`${T().kidsLabel} (${S.kids} × ${money(M.kidP)})`, S.kids*M.kidP]);
+  if(M.svcAmt) r.push([`Service charge (${S.svc}%)`, M.svcAmt]);
+  if(S.dlv) r.push(['Delivery and setup', S.dlv]);
+  return r;
+}
+function menuRows(){ return PRICED.filter(i=>i.on).map(i=>[i.n, M.f.rows[i.id].menu]); }
+const line=(a,b,cls='')=>`<tr class="${cls}"><td>${a}</td><td class="num">${b}</td></tr>`;
+function head(I,title,numLabel){
+  return `<h3>${esc(I.biz)}</h3>${I.bizc?`<p class="meta">${esc(I.bizc)}</p>`:''}`+
+    `<p class="meta" style="margin-top:8px"><b>${title}</b> &nbsp;#${esc(jobNo)}${numLabel||''}</p>`+
+    `<p class="meta">For: ${esc(I.cn||'Customer name')}${I.cc?' ('+esc(I.cc)+')':''}</p>`+
+    `<p class="meta">Event: ${esc(I.date)}${I.time?', serving at '+esc(I.time):''}${I.venue?' at '+esc(I.venue):''}</p>`+
+    `<p class="meta">Guests: ${S.adults} adults and teens${S.kids?`, ${S.kids} kids`:''}</p>`;
+}
+function totalsRows(){
+  return chargeRows().map(r=>line(esc(r[0]),money(r[1]))).join('')+
+    (S.tax?line('Subtotal',money(M.rev))+line(`Sales tax (${S.tax}%)`,money(M.taxAmt)):'')+
+    line('Total',money(M.total),'tot');
+}
+function quoteDocs(){
+  const I=info(), valid=num('valid'), cdl=num('cdl');
+  const fine=[I.notes, `Prepared ${fmtDate(today())}.`+(valid?` This estimate is valid for ${valid} days.`:''),
+    `Final guest count is due ${cdl?cdl+' days':''} before the event. The total is updated to match it.`].filter(Boolean).join('\n\n');
+  $('estDoc').innerHTML=head(I,'Catering estimate')+
+    `<table><thead><tr><th>Menu</th><th class="num">Approximate amount</th></tr></thead><tbody>${menuRows().map(x=>line(esc(x[0]),esc(x[1]))).join('')}</tbody></table>`+
+    `<table><tbody>${totalsRows()}${line(`Deposit due to book (${S.dep}%)`,money(M.dep))}${line('Balance due before or at the event',money(M.total-M.dep))}</tbody></table>`+
+    `<div class="fine">${esc(fine)}</div>`;
+
+  const paid=r2(payments.reduce((a,p)=>a+p.amt,0)), bal=r2(M.total-paid);
+  const status = !payments.length ? ['due','No payments yet'] : bal>0.004 ? ['due',`Balance due: ${money(bal)}`] : bal<-0.004 ? ['over',`Overpaid by ${money(-bal)}`] : ['paid','Paid in full'];
+  const last = payments.length ? payments[payments.length-1].d : today();
+  $('rcDoc').innerHTML=head(I,'Payment receipt',`-${payments.length||0}`)+
+    `<p class="meta">Receipt date: ${esc(fmtDate(last))}</p><span class="badge ${status[0]}">${esc(status[1])}</span>`+
+    `<table><thead><tr><th>Charges</th><th class="num">Amount</th></tr></thead><tbody>${totalsRows()}</tbody></table>`+
+    `<table><thead><tr><th>Payments received</th><th class="num">Amount</th></tr></thead><tbody>`+
+    (payments.length?payments.map(p=>line(`${esc(fmtDate(p.d))} · ${esc(p.m)}${p.note?' · '+esc(p.note):''}`,money(p.amt))).join(''):line('None yet','$0.00'))+
+    line('Total paid',money(paid),'tot')+line(bal>=0?'Balance due':'Refund due to customer',money(Math.abs(bal)))+`</tbody></table>`+
+    `<div class="fine">Thank you for your business!${bal>0.004?`\nThe remaining ${money(bal)} is due before or at the event.`:''}</div>`;
+}
+function estText(){
+  const I=info(), L=[`${I.biz} - Catering estimate #${jobNo}`]; if(I.bizc) L.push(I.bizc);
+  L.push(`For: ${I.cn||'Customer'}`,`Event: ${I.date}${I.time?', serving at '+I.time:''}${I.venue?' at '+I.venue:''}`,`Guests: ${S.adults} adults${S.kids?`, ${S.kids} kids`:''}`,'','Menu:');
+  menuRows().forEach(x=>L.push(`- ${x[0]}: ${x[1]}`)); L.push('');
+  chargeRows().forEach(r=>L.push(`${r[0]}: ${money(r[1])}`));
+  if(S.tax) L.push(`Subtotal: ${money(M.rev)}`,`Sales tax (${S.tax}%): ${money(M.taxAmt)}`);
+  L.push(`Total: ${money(M.total)}`,`Deposit due to book (${S.dep}%): ${money(M.dep)}`,`Balance due before or at the event: ${money(M.total-M.dep)}`);
+  if(I.notes) L.push('',I.notes);
+  return L.join('\n');
+}
+function rcText(){
+  const I=info(), paid=r2(payments.reduce((a,p)=>a+p.amt,0)), bal=r2(M.total-paid);
+  const L=[`${I.biz} - Payment receipt #${jobNo}-${payments.length}`]; if(I.bizc) L.push(I.bizc);
+  L.push(`For: ${I.cn||'Customer'}`,`Event: ${I.date}${I.venue?' at '+I.venue:''}`,'');
+  chargeRows().forEach(r=>L.push(`${r[0]}: ${money(r[1])}`));
+  if(S.tax) L.push(`Sales tax (${S.tax}%): ${money(M.taxAmt)}`);
+  L.push(`Total: ${money(M.total)}`,'','Payments received:');
+  payments.forEach(p=>L.push(`- ${fmtDate(p.d)} ${p.m}${p.note?' ('+p.note+')':''}: ${money(p.amt)}`));
+  L.push(`Total paid: ${money(paid)}`, bal>=0?`Balance due: ${money(bal)}`:`Refund due: ${money(-bal)}`, bal<=0.004&&bal>=-0.004?'PAID IN FULL':'','Thank you for your business!');
+  return L.filter((x,i)=>x!==''||i<L.length-1).join('\n');
+}
+function payTable(){
+  $('payTbl').innerHTML = payments.length ? payments.map((p,k)=>`<tr><td>${esc(fmtDate(p.d))}</td><td>${esc(p.m)}</td><td>${esc(p.note||'')}</td><td class="num">${money(p.amt)}</td><td class="num"><button type="button" class="x" data-rm="${k}">Remove</button></td></tr>`).join('')
+    : `<tr><td colspan="5" class="sub">No payments recorded yet.</td></tr>`;
+}
+
+/* ---------- setup: menu items ---------- */
+const IE_COLS={
+  meat:[['n','Name','text'],['note','Note','text'],['y','Yield after trim and cook (%)','pct'],['pack','Package weight (lb)','num'],['packName','Package called','text']],
+  side:[['n','Name','text'],['oz','Scoop per adult (oz cooked)','num'],['raw','Raw lb to buy per cooked lb','num'],['dens','Cooked lb per quart','num'],['rawNote','Buy note','text']],
+  count:[['n','Name','text'],['per','Per adult','num'],['pack','Pack size (count)','num'],['packName','Pack called','text'],['each','Counted as','text']],
+  sauce:[['n','Name','text'],['oz','Oz per adult','num'],['bottle','Bottle size (oz)','num'],['note','Note','text']]
+};
+const IE_TITLE={meat:'Meats',side:'Sides',count:'Counted extras (buns, rolls, cornbread)',sauce:'Sauces and condiments (by the bottle)'};
+const PRICE_LBL={meat:'Price ($ per raw lb)',side:'Price ($ per cooked lb)',count:'Price ($ per pack)',sauce:'Price ($ per bottle)'};
+function buildItems(){
+  let h='';
+  Object.keys(IE_COLS).forEach(k=>{
+    const list=store.items.filter(d=>d.kind===k), cols=IE_COLS[k];
+    h+=`<h3 class="sm">${IE_TITLE[k]}</h3>`;
+    if(!list.length){ h+=`<p class="note" style="margin:0">None. Add one below.</p>`; return; }
+    h+=`<div class="tablewrap"><table class="ie"><thead><tr>${cols.map(c=>`<th${c[2]==='text'?'':' class="num"'}>${c[1]}</th>`).join('')}<th>On for new jobs</th><th></th></tr></thead><tbody>`;
+    list.forEach((d,ix)=>{
+      const nm=esc(d.n);
+      h+='<tr>'+cols.map(c=>{
+        const al=`aria-label="${esc(c[1])}: ${nm}"`;
+        if(c[2]==='text') return `<td><input type="text" class="nosave" value="${esc(d[c[0]]??'')}" data-ie="${d.id}" data-f="${c[0]}" ${al}></td>`;
+        const v=c[2]==='pct'?fmtN(d[c[0]]*100):d[c[0]];
+        return `<td class="num"><input type="number" class="nosave" min="${c[2]==='pct'?1:0}"${c[2]==='pct'?' max="100"':''} step="any" value="${v}" data-ie="${d.id}" data-f="${c[0]}" ${al}></td>`;
+      }).join('')+
+      `<td><input type="checkbox" class="nosave" data-ie="${d.id}" data-f="def" ${d.def?'checked':''} aria-label="On for new jobs: ${nm}"></td>`+
+      `<td class="act"><button type="button" class="sec sm" data-act="ieUp" data-id="${d.id}"${ix===0?' disabled':''} aria-label="Move ${nm} up">↑</button>`+
+      `<button type="button" class="sec sm" data-act="ieDown" data-id="${d.id}"${ix===list.length-1?' disabled':''} aria-label="Move ${nm} down">↓</button>`+
+      `<button type="button" class="x" data-act="ieDel" data-id="${d.id}">Delete</button></td></tr>`;
+    });
+    h+='</tbody></table></div>';
+  });
+  $('ieWrap').innerHTML=h;
+  $('iePriceL').textContent=PRICE_LBL[$('ieKind').value];
+}
+function afterItems(rebuildEditor){
+  persist(); rebuildCatalog(); build(); buildStore(); if(rebuildEditor) buildItems(); calc();
+}
+function ieInput(t){
+  const d=store.items.find(x=>x.id===t.dataset.ie); if(!d) return;
+  const f=t.dataset.f;
+  if(f==='def') d.def=t.checked;
+  else if(t.type==='text'){ const v=t.value.trim(); if(f==='n'&&!v) return; d[f]=v; }
+  else { let v=parseFloat(t.value); if(!isFinite(v)) return;
+    if(f==='y'){ if(v<1||v>100) return; v=v/100; } else if(v<=0) return;
+    d[f]=v; }
+  afterItems(false);
+}
+const jobsUsing = id => Object.values(store.jobs).filter(j=>(j.items||[]).some(x=>x.id===id&&x.on)).length;
+
+/* ---------- setup: settings ---------- */
+const ST_GEN=[
+  ['kidFactor','Kids eat (% of an adult portion)',0,100,'Also sets how kids count toward food amounts.'],
+  ['kidsLabel','What kids are called on estimates',null,null,'e.g. Kids under 12, Children 3–10'],
+  ['meatShare','Meat factor when you serve 2+ meats',1,2,'Each adult gets this ÷ number of meats of a full portion of each. 1.15 = 15% more meat in total.'],
+  ['sideBase','A normal side scoop assumes this many sides',1,12,'With fewer sides, scoops get bigger; with more, smaller.'],
+  ['sideMin','Smallest side scoop (× normal)',0.1,1],
+  ['sideMax','Largest side scoop (× normal)',1,3],
+  ['roundLb','Round purchases up to the nearest',null,null,null,[[0.25,'¼ lb'],[0.5,'½ lb'],[1,'1 lb']]],
+  ['staleDays','Flag store prices older than (days)',1,365],
+  ['fcWarn','Warn when food cost is above (% of food sales)',10,90],
+  ['fcLow','Food cost target, low end (%)',5,90],
+  ['fcHigh','Food cost target, high end (%)',5,90]
+];
+const SL={
+  appetite:{t:'Appetite choices',cols:[['label','Name','text'],['v','Portion multiplier (×)','num']],blank:{label:'New choice',v:1}},
+  styles:{t:'How meat is served',cols:[['label','Name','text'],['oz','Cooked oz per adult','num']],blank:{label:'New style',oz:6}},
+  pans:{t:'Pan sizes',cols:[['label','Description','text'],['name','Short name (used in counts)','text'],['cap','Holds, filled to the brim (fl oz)','num'],['price','Cost per pan ($)','num0']],blank:{label:'New pan',name:'pan',cap:120,price:0}}
+};
+function buildGen(){
+  const s=T();
+  $('stGen').innerHTML=ST_GEN.map(([k,l,mn,mx,hint,opts])=>{
+    const id='st-'+k, hn=hint?`<span class="hint">${esc(hint)}</span>`:'';
+    if(opts) return `<div><label for="${id}">${l}</label><select id="${id}" class="nosave" data-st="${k}">${opts.map(o=>`<option value="${o[0]}"${+s[k]===o[0]?' selected':''}>${o[1]}</option>`).join('')}</select>${hn}</div>`;
+    if(mn===null) return `<div><label for="${id}">${l}</label><input id="${id}" class="nosave" type="text" value="${esc(s[k])}" data-st="${k}">${hn}</div>`;
+    return `<div><label for="${id}">${l}</label><input id="${id}" class="nosave" type="number" min="${mn}" max="${mx}" step="any" value="${s[k]}" data-st="${k}">${hn}</div>`;
+  }).join('');
+}
+function buildLists(){
+  const s=T();
+  $('stLists').innerHTML=Object.keys(SL).map(k=>{
+    const L=SL[k];
+    return `<h3 class="sm">${L.t}</h3><div class="tablewrap"><table class="ie" style="min-width:${k==='pans'?640:420}px"><thead><tr>${L.cols.map(c=>`<th${c[2]==='text'?'':' class="num"'}>${c[1]}</th>`).join('')}<th></th></tr></thead><tbody>`+
+      s[k].map((row,ix)=>'<tr>'+L.cols.map(c=>{
+        const al=`aria-label="${esc(c[1])}, row ${ix+1}"`;
+        return c[2]==='text'
+          ? `<td><input type="text" class="nosave" value="${esc(row[c[0]]??'')}" data-sl="${k}" data-i="${ix}" data-f="${c[0]}" ${al}></td>`
+          : `<td class="num"><input type="number" class="nosave" min="0" step="any" value="${row[c[0]]}" data-sl="${k}" data-i="${ix}" data-f="${c[0]}" ${al}></td>`;
+      }).join('')+`<td class="act"><button type="button" class="x" data-act="slDel" data-list="${k}" data-i="${ix}"${s[k].length<2?' disabled':''}>Remove</button></td></tr>`).join('')+
+      `</tbody></table></div><div class="row" style="margin:8px 0 0"><button type="button" class="sec sm" data-act="slAdd" data-list="${k}">Add a choice</button></div>`;
+  }).join('');
+  $('stMethods').value=s.methods.join('\n');
+}
+const DF_FIELDS=['biz','bizc','qnotes','valid','cdl','appetite','style','buffer','panType','panFill','fc','price','kp','dlv','svc','tax','dep','hrs','rate','fuel','trav','pack','other','fee','tm'];
+function buildDefaults(){
+  $('stDef').innerHTML=DF_FIELDS.map(id=>{
+    const src=$(id), lab=document.querySelector(`label[for="${id}"]`), name=id==='fc'?'Food cost % for the suggested price':(lab?lab.textContent:id), did='df-'+id;
+    const v=defOf(id);
+    if(src.tagName==='SELECT') return `<div><label for="${did}">${esc(name)}</label><select id="${did}" class="nosave" data-df="${id}" data-opts="${src.dataset.opts}"></select></div>`;
+    if(src.tagName==='TEXTAREA') return `<div style="grid-column:1/-1"><label for="${did}">${esc(name)}</label><textarea id="${did}" class="nosave" data-df="${id}">${esc(v)}</textarea></div>`;
+    const a=['min','max','step'].map(x=>src.getAttribute(x)!==null?` ${x}="${src.getAttribute(x)}"`:'').join('');
+    return `<div><label for="${did}">${esc(name)}</label><input id="${did}" class="nosave" type="${src.type}"${a} value="${esc(v)}" data-df="${id}"></div>`;
+  }).join('');
+  DF_FIELDS.forEach(id=>{ const e=$('df-'+id); if(e.tagName==='SELECT'){ fillSel(e); setSel(e,defOf(id)); } });
+}
+function buildSetup(){ buildItems(); buildGen(); buildLists(); buildDefaults(); }
+function settingsChanged(){ persist(); applySettingsUI(); buildStore(); calc(); }
+function setupInput(t){
+  const s=T();
+  if(t.dataset.ie!==undefined){ ieInput(t); return; }
+  if(t.id==='ieKind'){ $('iePriceL').textContent=PRICE_LBL[t.value]; return; }
+  if(t.dataset.st){
+    const k=t.dataset.st, g=ST_GEN.find(x=>x[0]===k);
+    if(g[2]===null&&!g[5]){ const v=t.value.trim(); if(!v) return; s[k]=v; }
+    else { const v=parseFloat(t.value); if(!isFinite(v)) return; if(g[2]!==null && (v<g[2]||v>g[3])) return; s[k]=v; }
+    $('msgST').textContent='Saved. Every job now uses this.'; settingsChanged(); return;
+  }
+  if(t.dataset.sl){
+    const row=s[t.dataset.sl][+t.dataset.i], f=t.dataset.f; if(!row) return;
+    const col=SL[t.dataset.sl].cols.find(c=>c[0]===f);
+    if(col[2]==='text'){ let v=t.value.trim().replace(/\|/g,'/'); if(!v) return; row[f]=v; }
+    else { const v=parseFloat(t.value); if(!isFinite(v) || v<0 || (col[2]==='num'&&v===0)) return; row[f]=v; }
+    settingsChanged(); buildDefaults(); return;
+  }
+  if(t.id==='stMethods'){
+    const m=t.value.split('\n').map(x=>x.trim()).filter(Boolean); if(!m.length) return;
+    s.methods=[...new Set(m)]; settingsChanged(); buildDefaults(); return;
+  }
+  if(t.dataset.df){
+    const id=t.dataset.df; s.defaults[id]=t.value;
+    if(id==='panType' && t.value!=='custom'){ const a=t.value.split('|'); s.defaults.panCap=a[0]; s.defaults.panPrice=a[1]; }
+    persist(); $('msgDF').textContent='Saved. New jobs will start with these values.'; return;
+  }
+}
+/* Two-click confirm for anything that overwrites or deletes */
+const arms={};
+function armed(key,btn,label){
+  if(arms[key]){ clearTimeout(arms[key]); delete arms[key]; if(btn.dataset.lbl) btn.textContent=btn.dataset.lbl; return true; }
+  btn.dataset.lbl=btn.textContent; btn.textContent=label||'Click again to confirm';
+  arms[key]=setTimeout(()=>{ delete arms[key]; btn.textContent=btn.dataset.lbl; },4000);
+  return false;
+}
+function setupAction(b){
+  const a=b.dataset.act, s=T();
+  if(a==='ieUp'||a==='ieDown'){
+    const L=store.items, i=L.findIndex(d=>d.id===b.dataset.id), dir=a==='ieUp'?-1:1; if(i<0) return;
+    let j=i+dir; while(j>=0&&j<L.length&&L[j].kind!==L[i].kind) j+=dir;
+    if(j<0||j>=L.length) return; [L[i],L[j]]=[L[j],L[i]]; afterItems(true);
+    const nb=document.querySelector(`[data-act="${a}"][data-id="${b.dataset.id}"]`); if(nb&&!nb.disabled) nb.focus();
+    return;
+  }
+  if(a==='ieDel'){
+    const d=store.items.find(x=>x.id===b.dataset.id); if(!d) return;
+    const n=jobsUsing(d.id);
+    if(!armed('del-'+d.id,b,'Click again to delete')){
+      $('msgIE').textContent=n?`${d.n} is on ${n} saved job${n>1?'s':''}. Deleting it removes it from ${n>1?'those jobs':'that job'} too.`:''; return; }
+    const wasOn=PRICED.some(i=>i.id===d.id&&i.on);
+    store.items=store.items.filter(x=>x.id!==d.id); delete store.prices[d.id];
+    Object.values(store.jobs).forEach(j=>{ if(j.items) j.items=j.items.filter(x=>x.id!==d.id); });
+    afterItems(true); if(wasOn && store.cur){ dirty=true; saveJob(); }
+    $('msgIE').textContent=`Deleted ${d.n}.`; return;
+  }
+  if(a==='ieAdd'){
+    const kind=$('ieKind').value, name=$('ieName').value.trim(), price=parseFloat($('iePrice').value);
+    if(!name){ $('msgIE').textContent='Enter a name first.'; $('ieName').focus(); return; }
+    const id='x'+Date.now().toString(36)+Math.floor(Math.random()*36).toString(36);
+    const d={id, n:name, kind, def:true, price:isFinite(price)&&price>=0?price:0, ...KIND_NEW[kind]};
+    let at=-1; store.items.forEach((x,ix)=>{ if(x.kind===kind) at=ix; });
+    if(at<0){ const order=['meat','side','count','sauce']; at=store.items.findIndex(x=>order.indexOf(x.kind)>order.indexOf(kind))-1; if(at<-1) at=store.items.length-1; }
+    store.items.splice(at+1,0,d);
+    if(isFinite(price)&&price>0) store.prices[id]={price:r2(price),date:today(),store:''};
+    afterItems(true); if(store.cur){ dirty=true; saveJob(); }
+    $('ieName').value=''; $('iePrice').value='';
+    $('msgIE').textContent=`Added ${name}. Fill in its amounts in the table above. It's checked on this job's Menu tab.`; return;
+  }
+  if(a==='ieReset'){
+    if(!armed('ieReset',b,'Click again to reset the menu')){ $('msgIE').textContent='This removes items you added and undoes your edits to the starting items.'; return; }
+    const keep=new Set(DEFAULT_ITEMS.map(d=>d.id));
+    store.items.filter(d=>!keep.has(d.id)).forEach(d=>delete store.prices[d.id]);
+    store.items=clone(DEFAULT_ITEMS); afterItems(true);
+    $('msgIE').textContent='Menu items reset to the starting list. Your store prices for them are kept.'; return;
+  }
+  if(a==='slAdd'){ s[b.dataset.list].push(clone(SL[b.dataset.list].blank)); buildLists(); settingsChanged(); buildDefaults(); return; }
+  if(a==='slDel'){ const L=s[b.dataset.list]; if(L.length<2) return; L.splice(+b.dataset.i,1); buildLists(); settingsChanged(); buildDefaults(); return; }
+  if(a==='stReset'){
+    if(!armed('stReset',b,'Click again to reset')) return;
+    store.settings={...clone(DEFAULT_SETTINGS), defaults:s.defaults};
+    buildGen(); buildLists(); settingsChanged(); buildDefaults(); $('msgST').textContent='Reset to starting values.'; return;
+  }
+  if(a==='dfFromJob'){
+    [...DF_FIELDS,'panCap','panPrice'].forEach(id=>{ s.defaults[id]=$(id).value; });
+    persist(); buildDefaults(); $('msgDF').textContent='Saved the open job’s values as your defaults.'; return;
+  }
+  if(a==='dfClear'){
+    if(!armed('dfClear',b,'Click again to clear')) return;
+    s.defaults={}; persist(); buildDefaults(); $('msgDF').textContent='Defaults cleared. New jobs use the starting values.'; return;
+  }
+  if(a==='bizAll'){
+    const biz=defOf('biz'), bizc=defOf('bizc'), n=Object.keys(store.jobs).length;
+    if(!biz&&!bizc){ $('msgDF').textContent='Enter your business name or contact above first.'; return; }
+    if(!armed('bizAll',b,`Click again to update ${n} saved job${n!==1?'s':''}`)) return;
+    Object.values(store.jobs).forEach(j=>{ j.v=j.v||{}; j.v.biz=biz; j.v.bizc=bizc; });
+    $('biz').value=biz; $('bizc').value=bizc; persist(); calc(); if(store.cur){ dirty=true; saveJob(); }
+    $('msgDF').textContent=`Updated the business name and contact on ${n} saved job${n!==1?'s':''}.`; return;
+  }
+}
+
+/* ---------- actions ---------- */
+function printDoc(cls,msg){
+  document.body.classList.remove('pr-est','pr-rc'); document.body.classList.add(cls);
+  let fired=false; const on=()=>fired=true; window.addEventListener('beforeprint',on,{once:true});
+  try{ window.print(); }catch(_){}
+  setTimeout(()=>{ if(!fired){ $(msg).textContent='Printing isn\u2019t available in this view. Use the copy button and paste into a text or email, or open this page in Chrome, Safari or Edge on a computer.'; document.body.classList.remove(cls); } window.removeEventListener('beforeprint',on); },800);
+}
+window.addEventListener('afterprint',()=>document.body.classList.remove('pr-est','pr-rc'));
+function copy(text,msg){
+  const done=ok=>{ $(msg).textContent=ok?'Copied.':'Copy blocked. Select the text and copy it by hand.'; };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(()=>done(true),()=>done(false)); else done(false);
+}
+let delArm=null;
+document.addEventListener('click', e=>{
+  const tb=e.target.closest('[data-tab],[data-go]');
+  if(tb){ showTab(tb.dataset.tab||tb.dataset.go, true); if(tb.dataset.go) document.querySelector(`[data-tab="${tb.dataset.go}"]`).scrollIntoView({block:'nearest',inline:'nearest'}); return; }
+  const ab=e.target.closest('[data-act]'); if(ab){ setupAction(ab); return; }
+  const acb=e.target.closest('[data-ac]'); if(acb){ accessAction(acb); return; }
+  if(e.target.closest('details.more button')) e.target.closest('details.more').open=false;
+  const id=e.target.id;
+  if(id==='bPrintE') printDoc('pr-est','msgE');
+  if(id==='bPrintR') printDoc('pr-rc','msgR');
+  if(id==='bCopyE') copy(estText(),'msgE');
+  if(id==='bCopyR') copy(rcText(),'msgR');
+  if(id==='bApply' && M.tar!==null){ $('price').value=(Math.ceil(M.tar*4)/4).toFixed(2); dirty=true; calc(); saveJob(); }
+  if(id==='bUseStore'){ PRICED.forEach(i=>i.price=storePrice(i.id)); build(); dirty=true; calc(); saveJob(); }
+  if(id==='bFillDep'){ $('pamt').value=M.dep.toFixed(2); }
+  if(id==='bFillBal'){ $('pamt').value=Math.max(0,M.total-payments.reduce((a,p)=>a+p.amt,0)).toFixed(2); }
+  if(id==='bAddPay'){
+    const amt=r2(parseFloat($('pamt').value)||0);
+    if(amt<=0){ $('msgP').textContent='Enter an amount above $0.'; return; }
+    payments.push({d:$('pd').value||today(), amt, m:$('pmeth').value, note:$('pnote').value.trim()});
+    payments.sort((a,b)=>a.d.localeCompare(b.d));
+    $('pamt').value=''; $('pnote').value=''; $('msgP').textContent=`Recorded ${money(amt)}.`;
+    dirty=true; calc(); saveJob();
+  }
+  if(e.target.dataset && e.target.dataset.rm!==undefined){ payments.splice(+e.target.dataset.rm,1); dirty=true; calc(); saveJob(); }
+  if(id==='bNew') startNew(false);
+  if(id==='bDup') startNew(true);
+  if(id==='bDel'){
+    if(delArm){ clearTimeout(delArm); delArm=null; $('bDel').textContent='Delete job';
+      if(store.cur && store.jobs[store.cur]) delete store.jobs[store.cur];
+      startNew(false); }
+    else { $('bDel').textContent='Click again to delete'; delArm=setTimeout(()=>{ delArm=null; $('bDel').textContent='Delete job'; },3000); }
+  }
+  if(id==='bExp'){
+    saveFile(`catering-hub-backup-${today()}.json`, JSON.stringify({app:'catering-hub',version:3,exported:new Date().toISOString(),...store},null,1), 'application/json', $('saveMsg'), 'Backup saved.');
+  }
+  if(id==='bPortal' && ACC.portalLink){ window.open(ACC.portalLink,'_blank','noopener'); }
+  const txb=e.target.closest('[data-tx]'); if(txb) taxDownload(txb.dataset.tx);
+  if(id==='bSavePP'){
+    const pd=num('paid'), wt=num('wt'); if(!wt){ $('msgPP').textContent='Enter the weight first.'; return; }
+    const mid=$('ppMeat').value, it=PRICED.find(i=>i.id===mid), p=r2(pd/wt);
+    setStorePrice(mid,p,$('ppStore').value.trim()||undefined); buildStore(); calc();
+    $('msgPP').textContent=`Saved ${it.n} at ${money(p)} per raw lb. New jobs will use it. To use it in this job, press "Use my latest store prices" on the Menu tab.`;
+  }
+  if(id==='bSaveRS'){
+    if(!RS){ $('msgRS').textContent='Enter the batch cost and how much it makes first.'; return; }
+    setStorePrice(RS.id,RS.per); buildStore(); $('rsSide').value=RS.id; calc();
+    $('msgRS').textContent=`Saved ${RS.n} at ${money(r2(RS.per))} per cooked lb. Press "Use my latest store prices" on the Menu tab to apply it to this job.`;
+  }
+  if(id==='bResetStore'){ store.prices={}; persist(); buildStore(); calc(); $('msgS').textContent='Store prices reset to the starting values.'; }
+});
+document.addEventListener('input', e=>{
+  const t=e.target;
+  if(t.id==='jobSel'||t.id==='imp') return;
+  if(t.id==='txYear'||t.id==='txLabor'){ renderTaxes(); return; }
+  if(t.closest('#tab-setup')){ setupInput(t); return; }
+  if(t.dataset.sp){ const v=parseFloat(t.value); if(isFinite(v)&&v>=0){ setStorePrice(t.dataset.sp,v); const p=store.prices[t.dataset.sp]; $('sd-'+t.dataset.sp).textContent=fmtDate(p.date); } calc(); return; }
+  if(t.dataset.ss){ const p=store.prices[t.dataset.ss]; if(p){ p.store=t.value.trim(); } else { store.prices[t.dataset.ss]={price:storePrice(t.dataset.ss),date:today(),store:t.value.trim()}; $('sd-'+t.dataset.ss).textContent=fmtDate(today()); } persist(); return; }
+  if(t.id.startsWith('rs')){ rsCalc(); return; }
+  if(t.classList.contains('nosave')) return;
+  if(t.id==='panType' && t.value!=='custom'){ const a=t.value.split('|'); $('panCap').value=a[0]; $('panPrice').value=a[1]; }
+  if(t.dataset.price){ PRICED.find(i=>i.id===t.dataset.price).price=Math.max(0,parseFloat(t.value)||0); }
+  dirty=true; calc(); saveJob();
+});
+document.addEventListener('change', e=>{
+  const t=e.target;
+  if(t.id==='jobSel'){ if(t.value&&store.jobs[t.value]){ store.cur=t.value; dirty=false; applyJob(store.jobs[t.value]); persist(); jobList(); calc(); } return; }
+  if(t.closest('#tab-setup')){ if(t.type==='checkbox'||t.tagName==='SELECT') setupInput(t); return; }
+  if(t.id==='imp'){
+    const file=t.files[0]; if(!file) return;
+    const rd=new FileReader();
+    rd.onload=()=>{ try{ const d=JSON.parse(rd.result); const n=Object.keys(d.jobs||{}).length;
+        if(!d.jobs && !d.prices && !d.items) throw new Error('not a backup');
+        Object.assign(store.jobs,d.jobs||{}); if(d.prices) Object.assign(store.prices,d.prices);
+        if(Array.isArray(d.items)) store.items=cleanItems(d.items);
+        if(d.settings) store.settings=cleanSettings(d.settings);
+        foldDens(d.dens);
+        persist(); rebuildCatalog(); applySettingsUI(); build(); buildStore(); buildSetup(); jobList(); calc();
+        $('saveMsg').textContent=`Restored ${n} job${n!==1?'s':''}, your store prices${d.items||d.settings?', menu items and settings':''}.`; }
+      catch(_){ $('saveMsg').textContent='That file isn’t a backup from this calculator.'; } t.value=''; };
+    rd.readAsText(file); return;
+  }
+  if(t.dataset.on){ PRICED.find(i=>i.id===t.dataset.on).on=t.checked; dirty=true; calc(); saveJob(); }
+});
+
+/* ---------- start ---------- */
+/* ---------- sign-in screen ---------- */
+function showGate(mode,msg){
+  document.body.classList.remove('in');
+  const V={login:'fLogin',forgot:'fForgot',setpw:'fSetPw',load:'gLoad',locked:'gLocked'};
+  Object.values(V).forEach(f=>$(f).hidden=true);
+  if(V[mode]) $(V[mode]).hidden=false;
+  $('gErr').textContent=''; $('gMsg').textContent=msg||'';
+  const f=document.querySelector('#gate form:not([hidden]) input'); if(f) try{ f.focus(); }catch(_){}
+}
+function gateErr(m){ $('gErr').textContent=m; }
+async function openApp(){
+  showGate('load','Loading your jobs and prices\u2026');
+  let r;
+  try{ r=await api('GET'); }
+  catch(e){ if(e.message==='signin'){
+      const fresh=freshLogin&&e.detail; freshLogin=false;
+      showGate('login', fresh ? 'Your password was accepted, but Catering Hub\u2019s server couldn\u2019t confirm your sign-in.' : 'Sign in to open your jobs and prices.');
+      if(fresh) gateErr(`Server said: ${e.detail}. Try again in a minute. If it keeps happening, send this message to whoever set up Catering Hub.`);
+      return; }
+    if(e.message==='locked'){ showLocked(e.info); return; }
+    showGate('load','Can\u2019t reach your account right now. Check your connection.'); $('gRetry').hidden=false; return; }
+  if(!r.ok){ let d=''; try{ const j=await r.json(); d=[j.error,j.detail].filter(Boolean).join(': '); }catch(_){ d=r.status===404?'the saving service isn\u2019t installed (404)':'error '+r.status; }
+    showGate('load','Your account couldn\u2019t be loaded. Try again in a minute.'); gateErr(d?`Server said: ${d}`:''); $('gRetry').hidden=false; return; }
+  const j=await r.json(); rev=j.rev||0;
+  updateAccess(j.access);
+  let moved=false;
+  if(j.data) useData(j.data);
+  else {   // first sign-in: bring over anything saved on this device by the old version
+    let old=null; try{ old=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(_){}
+    useData(old); moved=!!(old && (Object.keys(old.jobs||{}).length || Object.keys(old.prices||{}).length));
+  }
+  if(!appStarted){
+    rebuildCatalog(); applySettingsUI();
+    if(store.cur && store.jobs[store.cur]) applyJob(store.jobs[store.cur]); else { store.cur=null; applyJob({}); }
+    $('pd').value=today();
+    buildStore(); buildSetup(); jobList(); calc(); showTab(location.hash.slice(1));
+    appStarted=true;
+  } else refreshAll();
+  $('acct').textContent=auth.email?`Signed in as ${auth.email}`:'';
+  if(ACC.owner) loadAccess(location.hash==='#access');
+  document.body.classList.add('in');
+  setSync('ok');
+  if(moved){ persist(); setSync('saving','Moved the jobs and prices saved on this device into your account\u2026'); }
+  if(pending) pushNow();
+}
+function readAuthHash(){
+  const h=new URLSearchParams(location.hash.slice(1)), out={};
+  ['invite_token','recovery_token','confirmation_token'].forEach(k=>{ if(h.get(k)) out[k]=h.get(k); });
+  if(Object.keys(out).length) try{ history.replaceState(null,'',location.pathname+location.search); }catch(_){}
+  return out;
+}
+let setPwMode=null, setPwToken=null;
+$('fLogin').addEventListener('submit',async e=>{
+  e.preventDefault(); const b=$('fLogin').querySelector('button[type=submit]'); b.disabled=true; gateErr('');
+  try{ await idLogin($('gEmail').value.trim(),$('gPw').value); $('gPw').value=''; await openApp(); }
+  catch(err){ gateErr(err.message); } finally{ b.disabled=false; }
+});
+$('fForgot').addEventListener('submit',async e=>{
+  e.preventDefault(); gateErr('');
+  try{ const r=await fetch(ID+'/recover',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('gEmail2').value.trim()})});
+    if(!r.ok && r.status!==404) throw new Error(await idErr(r)||'Couldn\u2019t send the email. Try again.');
+    showGate('login','If that email has an account, a reset link is on its way. Open it on this device or any other.'); }
+  catch(err){ gateErr(err.message); }
+});
+$('fSetPw').addEventListener('submit',async e=>{
+  e.preventDefault(); gateErr('');
+  const a=$('gNew').value, b=$('gNew2').value;
+  if(a.length<8){ gateErr('Use at least 8 characters.'); return; }
+  if(a!==b){ gateErr('The two passwords don\u2019t match.'); return; }
+  const btn=$('fSetPw').querySelector('button[type=submit]'); btn.disabled=true;
+  try{
+    if(setPwMode==='invite'){
+      const r=await fetch(ID+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:setPwToken,type:'signup',password:a})});
+      if(!r.ok) throw new Error('This invitation link has expired or was already used. Ask for a new invitation.');
+      await takeTokens(await r.json());
+    } else {
+      const r=await fetch(ID+'/user',{method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await accessToken()},body:JSON.stringify({password:a})});
+      if(!r.ok) throw new Error(await idErr(r)||'Couldn\u2019t change the password. Try the reset link again.');
+    }
+    $('gNew').value=$('gNew2').value=''; await openApp();
+  }catch(err){ gateErr(err.message==='signin'?'This reset link has expired. Ask for a new one.':err.message); }
+  finally{ btn.disabled=false; }
+});
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-gate]'); if(!g) return;
+  if(g.dataset.gate==='forgot'){ $('gEmail2').value=$('gEmail').value; showGate('forgot','We\u2019ll email you a link to choose a new password.'); }
+  if(g.dataset.gate==='login') showGate('login','Sign in to open your jobs and prices.');
+  if(g.dataset.gate==='retry'){ $('gRetry').hidden=true; openApp(); }
+  if(g.dataset.gate==='recheck') openApp();
+  if(g.dataset.gate==='pay'){ const u=payUrl(); if(u) window.open(u,'_blank','noopener'); }
+  if(g.dataset.gate==='signout') signOut(true);
+});
+$('bOut').addEventListener('click',()=>signOut(false));
+async function signOut(force){
+  if(!force && (pending||saving)){ $('saveMsg').textContent='Saving your last changes first\u2026'; await pushNow(); if(pending){ setSync('offline','Can\u2019t sign out yet: your latest changes aren\u2019t saved. Check your connection.'); return; } }
+  const tk=auth&&auth.access_token; auth=null; saveAuth();
+  try{ if(tk) fetch(ID+'/logout',{method:'POST',headers:{Authorization:'Bearer '+tk}}); }catch(_){}
+  location.replace(location.pathname);
+}
+
+(async()=>{
+  loadAuth();
+  const tok=readAuthHash();
+  try{
+    if(tok.invite_token){ setPwMode='invite'; setPwToken=tok.invite_token; $('setPwTitle').textContent='Welcome! Choose a password for your account.'; showGate('setpw',''); return; }
+    if(tok.recovery_token){
+      const r=await fetch(ID+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok.recovery_token,type:'recovery'})});
+      if(!r.ok){ showGate('login','That reset link has expired or was already used. Ask for a new one.'); return; }
+      await takeTokens(await r.json()); setPwMode='recovery'; $('setPwTitle').textContent='Choose a new password.'; showGate('setpw',''); return;
+    }
+    if(tok.confirmation_token){
+      const r=await fetch(ID+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok.confirmation_token,type:'signup'})});
+      if(r.ok){ await takeTokens(await r.json()); await openApp(); return; }
+    }
+  }catch(_){ showGate('login','Something went wrong with that link. Sign in, or ask for a new link.'); return; }
+  if(auth && auth.refresh_token) openApp(); else showGate('login','Sign in to open your jobs and prices.');
+})();
+</script>
+</body>
+</html>
