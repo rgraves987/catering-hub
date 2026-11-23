@@ -2,7 +2,7 @@
 // GET  -> the owner gets everything; anyone else gets their own status and their own payment history.
 // POST -> owner actions: extend (record a payment), setdate, lock, remove, config, seen.
 import { json, getUser, withNetlify, isOwner, accessOn, accessStatus, accessStore, userKey, seenKey,
-         todayStr, addDays, isDate, daysBetween, extendAccess, trialLength, DEFAULT_PRICE } from "../lib/common.mjs";
+         todayStr, addDays, isDate, daysBetween, extendAccess, trialLength, DEFAULT_PRICE, update } from "../lib/common.mjs";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const cleanUrl = (u) => { u = String(u || "").trim(); return /^https:\/\/[^\s<>"]+$/.test(u) ? u.slice(0, 500) : ""; };
@@ -64,14 +64,14 @@ const main = async (req, ctx) => {
     const days = Math.round(Number(b.defaultDays)), price = b.price === undefined || b.price === "" ? DEFAULT_PRICE : Math.round(Number(b.price) * 100) / 100;
     if (b.payLink && !cleanUrl(b.payLink)) return json({ error: "The payment link must start with https://" }, 400);
     if (b.portalLink && !cleanUrl(b.portalLink)) return json({ error: "The customer portal link must start with https://" }, 400);
-    await st.setJSON("config", { ...cfg, contact: String(b.contact || "").slice(0, 300),
+    await update(st, "config", (c) => ({ ...(c || {}), contact: String(b.contact || "").slice(0, 300),
       defaultDays: days >= 1 && days <= 3660 ? days : 30, price: price >= 0 ? price : 0,
       payLink: cleanUrl(b.payLink), portalLink: cleanUrl(b.portalLink),
-      trialDays: Math.max(0, Math.min(90, Math.round(Number(b.trialDays ?? trialLength(cfg))) || 0)) });
+      trialDays: Math.max(0, Math.min(90, Math.round(Number(b.trialDays ?? trialLength(c || {}))) || 0)) }));
     return json(await listAll());
   }
   if (b.action === "seen") {
-    await st.setJSON("config", { ...cfg, lastRead: now });
+    await update(st, "config", (c) => ({ ...(c || {}), lastRead: now }));
     return json(await listAll());
   }
 
@@ -87,26 +87,31 @@ const main = async (req, ctx) => {
     return json(await listAll());
   }
 
-  const rec = (await st.get(userKey(email), { type: "json" })) || { email, paidThrough: null, created: now, log: [] };
-  rec.log = rec.log || [];
   const note = String(b.note || "").slice(0, 200);
-  rec.trial = false;
-  if (b.action === "setdate") {
-    if (!isDate(b.date)) return json({ error: "Pick a date." }, 400);
-    rec.paidThrough = b.date;
-    rec.log.push({ at: now, action: "set date", through: b.date, note });
-  } else if (b.action === "lock") {
-    rec.paidThrough = addDays(today, -1);
-    rec.log.push({ at: now, action: "locked", through: rec.paidThrough, note });
-  } else if (b.action === "remove") {
+  if (b.action === "remove") {
     await Promise.all([st.delete(userKey(email)), st.delete(seenKey(email))]);
     return json(await listAll());
-  } else {
-    return json({ error: "Unknown action" }, 400);
   }
-  rec.log = rec.log.slice(-120);
-  await st.setJSON(userKey(email), rec);
+  if (b.action !== "setdate" && b.action !== "lock") return json({ error: "Unknown action" }, 400);
+  if (b.action === "setdate" && !isDate(b.date)) return json({ error: "Pick a date." }, 400);
+  await update(st, userKey(email), (cur) => {
+    const rec = cur || { email, paidThrough: null, created: now, log: [] };
+    rec.log = rec.log || [];
+    rec.trial = false;
+    if (b.action === "setdate") {
+      rec.paidThrough = b.date;
+      rec.log.push({ at: now, action: "set date", through: b.date, note });
+    } else {
+      rec.paidThrough = addDays(today, -1);
+      rec.log.push({ at: now, action: "locked", through: rec.paidThrough, note });
+    }
+    rec.log = rec.log.slice(-120);
+    return rec;
+  });
   return json(await listAll());
 };
 
-export const handler = withNetlify(main);
+export const handler = withNetlify(async (req, ctx) => {
+  try { return await main(req, ctx); }
+  catch (e) { if (String(e.message || "").startsWith("Busy")) return json({ error: e.message }, 409); throw e; }
+});

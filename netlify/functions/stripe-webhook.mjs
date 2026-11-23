@@ -49,7 +49,7 @@ export default async (req) => {
 
   let ev;
   try { ev = JSON.parse(raw); } catch { return json({ error: "Bad JSON" }, 400); }
-  const st = accessStore();
+  const st = accessStore(true); // modern mode: fresh reads are available here
   if (await st.get("evt:" + ev.id)) return json({ received: true, duplicate: true });
 
   const o = (ev.data && ev.data.object) || {};

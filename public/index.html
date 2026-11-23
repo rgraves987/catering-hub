@@ -210,6 +210,7 @@ details.qref li{margin:1px 0;overflow-wrap:anywhere}
       <div class="lockicon" aria-hidden="true">🔒</div>
       <p id="gContact"></p>
       <div class="row" style="margin:14px 0 0"><button type="button" id="gPay" data-gate="pay" hidden>Pay now</button><button type="button" class="sec" data-gate="recheck">I've renewed: check again</button><button type="button" class="sec" data-gate="signout">Sign out</button></div>
+      <p class="note" style="font-size:.78rem;margin:10px 0 0">Just paid? It can take up to a minute to show up. Then tap "check again".</p>
     </div>
     <form id="fLogin" hidden>
       <div><label for="gEmail">Email</label><input id="gEmail" class="nosave" type="email" autocomplete="username" required></div>
@@ -1090,7 +1091,8 @@ async function accessAction(b){
 }
 
 /* ---------- saving to the account ---------- */
-let rev=0, saveTimer=null, retryTimer=null, saving=false, pending=false, syncState='ok', appStarted=false;
+let rev='', lastSaved='', conflictN=0, saveTimer=null,   // rev = version tag (ETag) of the stored copy
+    retryTimer=null, saving=false, pending=false, syncState='ok', appStarted=false;
 function setSync(st,msg){
   syncState=st;
   const t={ok:`Saved to your account${auth&&auth.email?' ('+auth.email+')':''}. Sign in on any device to see your jobs.`,
@@ -1113,13 +1115,13 @@ async function pushNow(){
   if(saving||!pending) return;
   saving=true; pending=false; clearTimeout(retryTimer);
   try{
-    const r=await api('PUT',JSON.stringify({baseRev:rev,data:store}));
+    const r=await api('PUT',JSON.stringify({etag:rev,data:store}));
     if(r.status===409){
-      const cur=await r.json(); rev=cur.rev||0;
+      const cur=await r.json(); rev=cur.etag||''; conflictN++;
       if(mergeIn(cur.data)) refreshAll(); else { jobList(); buildStore(); }
       pending=true;
     } else if(!r.ok){ throw new Error('network'); }
-    else { const j=await r.json(); rev=j.rev; if(j.access) updateAccess(j.access); }
+    else { const j=await r.json(); rev=j.etag||''; lastSaved=j.saved||lastSaved; conflictN=0; if(j.access) updateAccess(j.access); }
     if(!pending) setSync('ok');
   }catch(e){
     pending=true;
@@ -1128,7 +1130,7 @@ async function pushNow(){
     else { setSync('offline'); retryTimer=setTimeout(pushNow,8000); }
   }finally{
     saving=false;
-    if(pending && syncState!=='offline' && syncState!=='signin') setTimeout(pushNow,50);
+    if(pending && syncState!=='offline' && syncState!=='signin') setTimeout(pushNow, conflictN ? Math.min(15000, 400*2**conflictN) : 50);
   }
 }
 async function pullLatest(){   // pick up changes made on another device
@@ -1136,8 +1138,9 @@ async function pullLatest(){   // pick up changes made on another device
   try{
     const r=await api('GET'); if(!r.ok) return;
     const j=await r.json(); if(j.access) updateAccess(j.access);
-    if(!j.data || (j.rev||0)<=rev || pending || saving) return;
-    const keepCur=store.cur; rev=j.rev; useData(j.data);
+    // Only take the server copy if it's newer than what this page last saved (never go backwards).
+    if(!j.data || !j.saved || j.etag===rev || (lastSaved && j.saved<=lastSaved) || pending || saving) return;
+    const keepCur=store.cur; rev=j.etag||''; lastSaved=j.saved; useData(j.data);
     if(keepCur && store.jobs[keepCur]) store.cur=keepCur;
     refreshAll(); setSync('ok');
   }catch(e){ if(e.message==='locked') showLocked(e.info); }
@@ -1887,7 +1890,7 @@ async function openApp(){
     showGate('load','Can\u2019t reach your account right now. Check your connection.'); $('gRetry').hidden=false; return; }
   if(!r.ok){ let d=''; try{ const j=await r.json(); d=[j.error,j.detail].filter(Boolean).join(': '); }catch(_){ d=r.status===404?'the saving service isn\u2019t installed (404)':'error '+r.status; }
     showGate('load','Your account couldn\u2019t be loaded. Try again in a minute.'); gateErr(d?`Server said: ${d}`:''); $('gRetry').hidden=false; return; }
-  const j=await r.json(); rev=j.rev||0;
+  const j=await r.json(); rev=j.etag||''; lastSaved=j.saved||'';
   updateAccess(j.access);
   let moved=false;
   if(j.data) useData(j.data);

@@ -74,7 +74,28 @@ export const addDays = (d, n) => {
 };
 export const daysBetween = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 864e5);
 
-export const accessStore = () => getStore({ name: "catering-hub-access", consistency: "strong" });
+// Storage. Classic-mode functions (the ones that check logins) can't use Netlify's "strong" reads,
+// so every read-then-save goes through update(), which saves only if nobody changed the record in between.
+// The Stripe receiver runs in modern mode and also gets fresh reads (strong = true).
+export const accessStore = (strong = false) => getStore(strong ? { name: "catering-hub-access", consistency: "strong" } : { name: "catering-hub-access" });
+export const dataStore = () => getStore({ name: "catering-hub-data" });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Read a JSON record, change it with fn, and save it atomically. fn gets the current value (or null)
+// and returns the new value, or undefined to leave it as is. Retries if another save got there first.
+export async function update(st, key, fn, tries = 8) {
+  for (let i = 0; i < tries; i++) {
+    const cur = await st.getWithMetadata(key, { type: "json" });
+    const next = await fn(cur ? structuredClone(cur.data) : null);
+    if (next === undefined) return cur ? cur.data : null;
+    const r = cur && cur.etag
+      ? await st.setJSON(key, next, { onlyIfMatch: cur.etag })
+      : await st.setJSON(key, next, { onlyIfNew: true });
+    if (r.modified) return next;
+    await sleep(200 * (i + 1));
+  }
+  throw new Error("Busy: someone else was saving at the same moment. Please try again in a minute.");
+}
 export const userKey = (email) => "user:" + String(email).toLowerCase();
 export const seenKey = (email) => "seen:" + String(email).toLowerCase();
 export const trialKey = (email) => "trialused:" + String(email).toLowerCase();
@@ -106,11 +127,17 @@ export async function accessStatus(user) {
     const used = await st.get(trialKey(user.email), { type: "json" });
     if (trialDays > 0 && !used) {
       const through = addDays(todayStr(), trialDays - 1);
-      r = { email: user.email, paidThrough: through, created: now, trial: true,
+      const fresh = { email: user.email, paidThrough: through, created: now, trial: true,
             log: [{ at: now, action: "trial", days: trialDays, through }] };
-      await Promise.all([st.setJSON(userKey(user.email), r), st.setJSON(trialKey(user.email), { at: now, days: trialDays })]);
-      await notify(st, { type: "trial", email: user.email, through,
-        msg: `Started a ${trialDays}-day free trial (first sign-in).` });
+      const w = await st.setJSON(userKey(user.email), fresh, { onlyIfNew: true });
+      if (w.modified) {
+        r = fresh;
+        await st.setJSON(trialKey(user.email), { at: now, days: trialDays });
+        await notify(st, { type: "trial", email: user.email, through,
+          msg: `Started a ${trialDays}-day free trial (first sign-in).` });
+      } else {
+        r = await st.get(userKey(user.email), { type: "json" }); // another request just created it
+      }
     }
   }
   const trial = !!(r && r.trial);
@@ -137,22 +164,24 @@ export const publicConfig = (cfg) => ({
 export async function extendAccess(st, email, { days, amount = 0, currency = "USD", method = "", note = "", ref = "", until = "" }) {
   email = String(email).toLowerCase();
   const now = new Date().toISOString(), today = todayStr();
-  const rec = (await st.get(userKey(email), { type: "json" })) || { email, paidThrough: null, created: now, log: [] };
-  rec.log = rec.log || [];
-  rec.trial = false;
-  const active = rec.paidThrough && rec.paidThrough >= today;
-  if (until) {
-    const before = rec.paidThrough;
-    rec.paidThrough = active && before > until ? before : until;
-    days = daysBetween(active ? before : addDays(today, -1), rec.paidThrough);
-  } else {
-    rec.paidThrough = active ? addDays(rec.paidThrough, days) : addDays(today, days - 1);
-  }
-  rec.log.push({ at: now, action: "payment", days, through: rec.paidThrough,
-    amount: Math.round(Number(amount || 0) * 100) / 100, currency, method, note, ref });
-  rec.log = rec.log.slice(-120);
-  await st.setJSON(userKey(email), rec);
-  return rec;
+  return update(st, userKey(email), (cur) => {
+    const rec = cur || { email, paidThrough: null, created: now, log: [] };
+    rec.log = rec.log || [];
+    rec.trial = false;
+    const active = rec.paidThrough && rec.paidThrough >= today;
+    let d = days;
+    if (until) {
+      const before = rec.paidThrough;
+      rec.paidThrough = active && before > until ? before : until;
+      d = daysBetween(active ? before : addDays(today, -1), rec.paidThrough);
+    } else {
+      rec.paidThrough = active ? addDays(rec.paidThrough, d) : addDays(today, d - 1);
+    }
+    rec.log.push({ at: now, action: "payment", days: d, through: rec.paidThrough,
+      amount: Math.round(Number(amount || 0) * 100) / 100, currency, method, note, ref });
+    rec.log = rec.log.slice(-120);
+    return rec;
+  });
 }
 
 // A notification for your Access tab (payments in, failed payments, cancellations).
