@@ -144,6 +144,9 @@ body.in #gate{display:none}
 [hidden]{display:none!important}
 .gcard .lnk{box-shadow:none;background:none;border:0;color:var(--green);padding:0;min-height:0;font-weight:600;text-decoration:underline;cursor:pointer;justify-self:start}
 #gErr{color:var(--red);font-weight:600}
+.reqbox{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px;margin-top:4px;font-size:.92rem;color:var(--muted)}
+.hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+.nt.request{background:#efe3fb;color:#5b2b86}
 .warnmsg{color:var(--red)!important;font-weight:600}
 #acct{font-size:.8rem;color:var(--muted);margin:0;overflow-wrap:anywhere}
 #accBanner{display:none;margin:0 0 8px;padding:8px 12px;border-radius:8px;border-left:5px solid var(--mustard);background:var(--soft);font-size:.88rem}
@@ -217,6 +220,17 @@ details.qref li{margin:1px 0;overflow-wrap:anywhere}
       <div><label for="gPw">Password</label><input id="gPw" class="nosave" type="password" autocomplete="current-password" required></div>
       <button type="submit">Sign in</button>
       <button type="button" class="lnk" data-gate="forgot">Forgot your password?</button>
+      <div class="reqbox"><span>New to Catering Hub?</span><button type="button" class="sec" data-gate="request">Request an invite</button></div>
+    </form>
+    <form id="fRequest" hidden>
+      <div><label for="rqName">Your name</label><input id="rqName" class="nosave" type="text" autocomplete="name" maxlength="100" required></div>
+      <div><label for="rqEmail">Email (your invitation goes here)</label><input id="rqEmail" class="nosave" type="email" autocomplete="email" maxlength="200" required></div>
+      <div><label for="rqPhone">Phone (optional)</label><input id="rqPhone" class="nosave" type="tel" autocomplete="tel" maxlength="40"></div>
+      <div><label for="rqBiz">Business name (optional)</label><input id="rqBiz" class="nosave" type="text" maxlength="120"></div>
+      <div><label for="rqMsg">Anything you'd like us to know? (optional)</label><textarea id="rqMsg" class="nosave" maxlength="500" rows="3"></textarea></div>
+      <div class="hp" aria-hidden="true"><label for="rqWeb">Website</label><input id="rqWeb" class="nosave" type="text" tabindex="-1" autocomplete="off"></div>
+      <button type="submit">Send my request</button>
+      <button type="button" class="lnk" data-gate="login">Back to sign in</button>
     </form>
     <form id="fForgot" hidden>
       <div><label for="gEmail2">Email</label><input id="gEmail2" class="nosave" type="email" autocomplete="username" required></div>
@@ -551,7 +565,7 @@ price for margin m: revenue needed = costs ÷ (1 − fee% × (1 + tax%) − m)
     <div>
       <h4>New customer</h4>
       <ul>
-        <li>Invite them in Netlify (Identity → Invite users).</li>
+        <li>New people can press <b>Request an invite</b> on the sign-in page. Their request shows up under <b>Invite requests</b>; press <b>Send invite</b>. Or invite anyone directly in Netlify (Identity → Invite users).</li>
         <li>Their <b>free trial</b> (3 days unless you change it below) starts the first time they sign in. You get a "New trial" notification with their email.</li>
         <li>When they pay (online, or you press <b>Record payment</b>), the trial ends and paid access starts.</li>
         <li>When a trial runs out, they see a "trial ended" lock screen with your Subscribe button. Each email gets only one trial.</li>
@@ -568,6 +582,12 @@ price for margin m: revenue needed = costs ÷ (1 − fee% × (1 + tax%) − m)
     </div>
   </div>
 </details>
+<section>
+  <h2>Invite requests</h2>
+  <p class="note" style="margin:0 0 10px">People who pressed "Request an invite" on the sign-in page. <b>Send invite</b> emails them a Netlify invitation; their free trial starts when they first sign in.</p>
+  <div class="tablewrap"><table class="ie ac" style="min-width:760px"><thead><tr><th>When</th><th>Name and business</th><th>Contact</th><th>Message</th><th>Status</th><th></th></tr></thead><tbody id="acReqs"></tbody></table></div>
+  <p id="msgRQ" class="note" aria-live="polite"></p>
+</section>
 <section>
   <h2>Payment notifications</h2>
   <p class="note" style="margin:0 0 10px">Online payments renew access automatically and show up here with the customer's email. New ones are highlighted.</p>
@@ -914,7 +934,18 @@ function renderAccess(withConfig){
         <button type="button" class="sec sm" data-ac="lock" data-email="${e}"${p.paidThrough&&p.daysLeft>=0?'':' disabled'}>Lock now</button>
         <button type="button" class="x" data-ac="remove" data-email="${e}">Remove</button></div></td></tr>`;
   }).join('') : '<tr><td colspan="6" class="sub">No customers yet. Record a payment above, or they\u2019ll appear here after they first sign in.</td></tr>';
-  const NT={payment:'Payment',failed:'Failed',refund:'Refund',canceled:'Canceled',unmatched:'Unmatched',trial:'New trial'};
+  const NT={payment:'Payment',failed:'Failed',refund:'Refund',canceled:'Canceled',unmatched:'Unmatched',trial:'New trial',request:'Invite request'};
+  const RQ=AC.requests||[];
+  $('acReqs').innerHTML = RQ.length ? RQ.map(r=>{ const e=esc(r.email), inv=r.status==='invited';
+    return `<tr class="${r.at>acViewRead&&!inv?'new':''}">
+      <td style="white-space:nowrap">${esc(new Date(r.at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</td>
+      <td><b>${esc(r.name)}</b>${r.business?`<span class="sub">${esc(r.business)}</span>`:''}</td>
+      <td style="overflow-wrap:anywhere">${e}${r.phone?`<span class="sub">${esc(r.phone)}</span>`:''}</td>
+      <td style="max-width:260px">${r.message?esc(r.message):'<span class="sub">—</span>'}</td>
+      <td>${inv?`<span class="badge paid">Invited</span><span class="sub">${esc(fmtDate((r.invitedAt||'').slice(0,10)))}</span>`:'<span class="badge due">Waiting</span>'}</td>
+      <td><div class="acts">${inv?`<button type="button" class="sec sm" data-ac="invite" data-email="${e}">Resend</button>`:`<button type="button" class="sm" data-ac="invite" data-email="${e}">Send invite</button><button type="button" class="sec sm" data-ac="markinvited" data-email="${e}" title="Use this if you invited them in Netlify yourself">Mark invited</button>`}
+        <button type="button" class="x" data-ac="dismiss" data-email="${e}">${inv?'Clear':'Dismiss'}</button></div></td></tr>`; }).join('')
+    : '<tr><td colspan="6" class="sub">No requests yet. When someone presses "Request an invite" on the sign-in page, they show up here.</td></tr>';
   $('acNotes').innerHTML = AC.notes.length ? AC.notes.slice(0,40).map(n=>`<tr class="${n.at>acViewRead?'new':''}">
       <td style="white-space:nowrap">${esc(new Date(n.at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</td>
       <td style="overflow-wrap:anywhere">${esc(n.email||'(no match)')}</td>
@@ -1086,7 +1117,10 @@ async function accessAction(b){
     if(a==='config'){ const days=parseInt($('acDefDays').value,10);
       await acPost({action:'config',contact:$('acContact').value.trim(),defaultDays:days,price:$('acPrice').value,trialDays:$('acTrial').value,payLink:$('acPayLink').value.trim(),portalLink:$('acPortal').value.trim()}); renderAccess(true); $('msgACC').textContent='Saved.'; return; }
     if(a==='history'){ subIncomeCSV(null,msg); return; }
-  }catch(e){ (a==='config'?$('msgACC'):msg).textContent = e.message==='signin'?'Your sign-in expired. Sign in again.':e.message; }
+    if(a==='invite'){ b.disabled=true; $('msgRQ').textContent='Sending\u2026'; const j=await acPost({action:'invite',email}); $('msgRQ').textContent=j.notice||`Invitation sent to ${email}.`; return; }
+    if(a==='markinvited'){ await acPost({action:'markinvited',email}); $('msgRQ').textContent=`Marked ${email} as invited.`; return; }
+    if(a==='dismiss'){ if(!armed('dis-'+email,b,'Click again')) return; await acPost({action:'dismiss',email}); $('msgRQ').textContent=`Removed the request from ${email}.`; return; }
+  }catch(e){ (a==='config'?$('msgACC'):['invite','markinvited','dismiss'].includes(a)?$('msgRQ'):msg).textContent = e.message==='signin'?'Your sign-in expired. Sign in again.':e.message; }
   finally{ b.disabled=false; }
 }
 
@@ -1870,7 +1904,7 @@ document.addEventListener('change', e=>{
 /* ---------- sign-in screen ---------- */
 function showGate(mode,msg){
   document.body.classList.remove('in');
-  const V={login:'fLogin',forgot:'fForgot',setpw:'fSetPw',load:'gLoad',locked:'gLocked'};
+  const V={login:'fLogin',forgot:'fForgot',setpw:'fSetPw',load:'gLoad',locked:'gLocked',request:'fRequest'};
   Object.values(V).forEach(f=>$(f).hidden=true);
   if(V[mode]) $(V[mode]).hidden=false;
   $('gErr').textContent=''; $('gMsg').textContent=msg||'';
@@ -1931,6 +1965,20 @@ $('fForgot').addEventListener('submit',async e=>{
     showGate('login','If that email has an account, a reset link is on its way. Open it on this device or any other.'); }
   catch(err){ gateErr(err.message); }
 });
+$('fRequest').addEventListener('submit',async e=>{
+  e.preventDefault(); gateErr('');
+  const btn=$('fRequest').querySelector('button[type=submit]'); btn.disabled=true;
+  try{
+    const r=await fetch('/.netlify/functions/request-invite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      name:$('rqName').value, email:$('rqEmail').value, phone:$('rqPhone').value, business:$('rqBiz').value, message:$('rqMsg').value, website:$('rqWeb').value })});
+    let j={}; try{ j=await r.json(); }catch(_){}
+    if(!r.ok) throw new Error(j.error||'Couldn\u2019t send your request. Please try again.');
+    const em=$('rqEmail').value.trim();
+    ['rqName','rqPhone','rqBiz','rqMsg'].forEach(id=>$(id).value='');
+    showGate('login',`Thanks! Your request is in. Watch ${em} for an invitation email from Netlify (check spam too). Click "Accept the invite" in it to choose your password.`);
+  }catch(err){ gateErr(err.message); }
+  finally{ btn.disabled=false; }
+});
 $('fSetPw').addEventListener('submit',async e=>{
   e.preventDefault(); gateErr('');
   const a=$('gNew').value, b=$('gNew2').value;
@@ -1954,6 +2002,7 @@ document.addEventListener('click',e=>{
   const g=e.target.closest('[data-gate]'); if(!g) return;
   if(g.dataset.gate==='forgot'){ $('gEmail2').value=$('gEmail').value; showGate('forgot','We\u2019ll email you a link to choose a new password.'); }
   if(g.dataset.gate==='login') showGate('login','Sign in to open your jobs and prices.');
+  if(g.dataset.gate==='request'){ $('rqEmail').value=$('gEmail').value; showGate('request','Tell us a little about you, and we\u2019ll email your invitation. Every new account starts with a free trial.'); }
   if(g.dataset.gate==='retry'){ $('gRetry').hidden=true; openApp(); }
   if(g.dataset.gate==='recheck') openApp();
   if(g.dataset.gate==='pay'){ const u=payUrl(); if(u) window.open(u,'_blank','noopener'); }

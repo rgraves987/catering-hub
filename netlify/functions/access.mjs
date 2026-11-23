@@ -10,7 +10,7 @@ const cleanUrl = (u) => { u = String(u || "").trim(); return /^https:\/\/[^\s<>"
 async function listAll() {
   const st = accessStore(), today = todayStr();
   const { blobs } = await st.list();
-  const people = {}, notes = [];
+  const people = {}, notes = [], requests = [];
   await Promise.all(blobs.map(async ({ key }) => {
     if (key.startsWith("user:")) {
       const r = await st.get(key, { type: "json" });
@@ -18,6 +18,9 @@ async function listAll() {
     } else if (key.startsWith("seen:")) {
       const s = await st.get(key, { type: "json" }), email = key.slice(5);
       people[email] = { email, ...(people[email] || {}), lastSeen: s && s.at };
+    } else if (key.startsWith("req:")) {
+      const r = await st.get(key, { type: "json" });
+      if (r) requests.push(r);
     } else if (key.startsWith("note:")) {
       const n = await st.get(key, { type: "json" });
       if (n) notes.push(n);
@@ -32,6 +35,7 @@ async function listAll() {
   notes.sort((a, b) => (a.at < b.at ? 1 : -1));
   return {
     owner: true, accessOn: accessOn(), today, list, notes: notes.slice(0, 100),
+    requests: requests.sort((a, b) => (a.at < b.at ? 1 : -1)),
     stripeReady: !!process.env.STRIPE_WEBHOOK_SECRET,
     config: { contact: c.contact || "", defaultDays: c.defaultDays || 30, price: c.price !== undefined ? c.price : DEFAULT_PRICE, trialDays: trialLength(c),
               payLink: c.payLink || "", portalLink: c.portalLink || "", lastRead: c.lastRead || "" },
@@ -77,6 +81,38 @@ const main = async (req, ctx) => {
 
   const email = String(b.email || "").trim().toLowerCase();
   if (!EMAIL.test(email)) return json({ error: "Enter a valid email address." }, 400);
+
+  if (b.action === "dismiss") {
+    await st.delete("req:" + email);
+    return json(await listAll());
+  }
+  if (b.action === "invite") {
+    // Send the Netlify Identity invitation for the owner, using the admin pass Netlify gives functions.
+    const id = ctx && ctx.lambda && ctx.lambda.clientContext && ctx.lambda.clientContext.identity;
+    if (!id || !id.url || !id.token) {
+      return json({ error: "Couldn't send the invitation from here. Invite them in Netlify (Identity → Invite users), then press Mark invited." }, 502);
+    }
+    let r, detail = "";
+    try {
+      r = await fetch(`${id.url.replace(/\/$/, "")}/invite`, {
+        method: "POST", headers: { Authorization: `Bearer ${id.token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!r.ok) { try { const j = await r.json(); detail = j.msg || j.error_description || j.error || ""; } catch {} }
+    } catch (e) { detail = "Netlify Identity didn't respond"; }
+    const already = r && (r.status === 422 || r.status === 409) && /already|registered|exists/i.test(detail);
+    if (r && (r.ok || already)) {
+      await update(st, "req:" + email, (c) => c ? { ...c, status: "invited", invitedAt: now } : undefined);
+      const res = await listAll();
+      return json({ ...res, notice: already ? `${email} already has an account. They can sign in, or use "Forgot your password?".`
+                                           : `Invitation sent to ${email}. Their 3-day trial starts when they first sign in.` });
+    }
+    return json({ error: `Netlify didn't send the invitation${detail ? " (" + detail + ")" : ""}. You can invite them in Netlify (Identity → Invite users), then press Mark invited.` }, 502);
+  }
+  if (b.action === "markinvited") {
+    await update(st, "req:" + email, (c) => c ? { ...c, status: "invited", invitedAt: now } : undefined);
+    return json(await listAll());
+  }
 
   if (b.action === "extend") {
     const days = Math.round(Number(b.days));

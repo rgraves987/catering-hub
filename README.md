@@ -10,6 +10,7 @@ What's in this folder:
 | `public/logo.webp`, `public/favicon.png`, `public/apple-touch-icon.png` | Your Catering Hub logo and the browser / home-screen icons |
 | `netlify/functions/data.mjs` | Saves and loads each person's data on Netlify, and refuses accounts whose paid access has ended |
 | `netlify/functions/access.mjs` | Your Access tab: records payments and access dates (only you can use it) |
+| `netlify/functions/request-invite.mjs` | Receives "Request an invite" forms from the sign-in page |
 | `netlify/functions/stripe-webhook.mjs` | Receives Stripe payments, renews access automatically and adds a notification with the customer's email |
 | `netlify/lib/common.mjs` | Shared sign-in, access and payment rules |
 | `package.json`, `netlify.toml` | Settings that tell Netlify how to run it |
@@ -85,6 +86,10 @@ Do this in Stripe's **test mode** first, with test card 4242 4242 4242 4242, the
 Your webhook only accepts messages signed with your Stripe secret. Forged, replayed or duplicate messages are ignored.
 
 ## Part 3. Give someone access
+
+**Easiest: let them ask.** The sign-in page has a **Request an invite** button. People enter their name, email and (optionally) phone, business and a message. You get a notification, and the request appears under **Access → Invite requests**. Press **Send invite** and Catering Hub sends the Netlify invitation for you. If that ever fails, invite them in Netlify as below and press **Mark invited**. A hidden spam trap filters out most bots, and **Dismiss** clears anything you don't want.
+
+**Or invite someone directly:**
 
 1. In your Netlify project, open **Identity → Invite users**.
 2. Type their email address and send the invitation.
