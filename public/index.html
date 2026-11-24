@@ -1978,6 +1978,11 @@ $('fRequest').addEventListener('submit',async e=>{
       name:$('rqName').value, email:$('rqEmail').value, phone:$('rqPhone').value, business:$('rqBiz').value, message:$('rqMsg').value, website:$('rqWeb').value })});
     let j={}; try{ j=await r.json(); }catch(_){}
     if(!r.ok) throw new Error(j.error||'Couldn\u2019t send your request. Please try again.');
+        if(!$('rqWeb').value){
+      try{ await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({
+        'form-name':'access-request', name:$('rqName').value.trim(), email:$('rqEmail').value.trim(), phone:$('rqPhone').value.trim(),
+        business:$('rqBiz').value.trim(), message:$('rqMsg').value.trim(), website:'' }).toString()}); }catch(_){}
+    }
     const em=$('rqEmail').value.trim();
     ['rqName','rqPhone','rqBiz','rqMsg'].forEach(id=>$(id).value='');
     showGate('login',`Thanks! Your request is in. Watch ${em} for an invitation email from Netlify (check spam too). Click "Accept the invite" in it to choose your password.`);
